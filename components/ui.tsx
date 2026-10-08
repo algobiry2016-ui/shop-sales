@@ -32,8 +32,10 @@ export function Nav({ profile, active }: { profile: Profile; active: "sale" | "d
   return (
     <header className="sticky top-0 z-10 bg-pink-700 text-white shadow">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-2 px-4 py-2">
-        <span className="me-auto text-lg font-bold">
-          🌸 <Bi l={T.appName} />
+        <span className="me-auto flex items-center gap-2 text-lg font-bold">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="Logo" className="h-10 w-10 rounded-lg" />
+          <Bi l={T.appName} />
         </span>
         <nav className="flex flex-wrap gap-1 text-sm">
           {links.map((l) => (

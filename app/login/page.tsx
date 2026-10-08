@@ -45,8 +45,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 shadow">
-        <h1 className="text-center text-2xl font-bold text-pink-700">
-          🌸 <Bi l={T.appName} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Logo" className="mx-auto h-24 w-auto" />
+        <h1 className="text-center text-xl font-bold text-pink-700">
+          <Bi l={T.appName} />
         </h1>
         <label className="block">
           <Bi l={T.phone} className="mb-1 text-sm font-semibold" />
