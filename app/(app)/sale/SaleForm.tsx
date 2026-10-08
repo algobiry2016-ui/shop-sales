@@ -51,6 +51,10 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
   const [giftAmount, setGiftAmount] = useState("");
   const total = (Number(amount) || 0) + (withGift === "yes" ? Number(giftAmount) || 0 : 0);
   const [saleDate, setSaleDate] = useState(today);
+  const backdated = canBackdate && saleDate !== today;
+  // "Not specified" is only for past sales whose details nobody remembers.
+  const without = <K extends string>(o: Record<K, Bilingual>) =>
+    (backdated ? o : Object.fromEntries(Object.entries(o).filter(([k]) => k !== "unknown"))) as Record<K, Bilingual>;
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState("");
 
@@ -104,15 +108,21 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
             value={saleDate}
             max={today}
             required
-            onChange={(e) => setSaleDate(e.target.value)}
+            onChange={(e) => {
+              setSaleDate(e.target.value);
+              if (e.target.value === today) {
+                if (orderType === "unknown") setOrderType("");
+                if (fulfillment === "unknown") setFulfillment("pickup");
+              }
+            }}
             dir="ltr"
             className={`w-full rounded-md border p-3 ${saleDate !== today ? "border-ink bg-sand" : ""}`}
           />
           {saleDate !== today && <Bi l={T.pastDateNote} className="mt-1 text-xs text-muted" />}
         </label>
       )}
-      <Choice name="order_type" title={T.orderType} options={ORDER_TYPES} value={orderType} onChange={setOrderType} />
-      <Choice name="fulfillment" title={T.fulfillment} options={FULFILLMENT} value={fulfillment} onChange={setFulfillment} />
+      <Choice name="order_type" title={T.orderType} options={without(ORDER_TYPES)} value={orderType} onChange={setOrderType} />
+      <Choice name="fulfillment" title={T.fulfillment} options={without(FULFILLMENT)} value={fulfillment} onChange={setFulfillment} />
       <Choice name="payment_method" title={T.paymentMethod} options={PAYMENT_METHODS} value={payment} onChange={setPayment} />
 
       <Choice name="with_gift" title={T.withGift} options={{ no: T.no, yes: T.yes }} value={withGift} onChange={setWithGift} />
@@ -160,15 +170,12 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
           <input name="customer_name" maxLength={100} className="w-full rounded-md border p-2" />
         </label>
         <label className="block">
-          <Bi l={fulfillment === "delivery" ? T.phoneRequired : T.customerPhone} className="mb-1 text-sm" />
+          <Bi l={T.customerPhone} className="mb-1 text-sm" />
           <input
             name="customer_phone"
             type="tel"
             inputMode="tel"
             maxLength={30}
-            required={fulfillment === "delivery"}
-            pattern={fulfillment === "delivery" ? "(\\+?966|00966|0)?5[0-9]{8}" : undefined}
-            title="05XXXXXXXX"
             placeholder="05XXXXXXXX"
             dir="ltr"
             className="w-full rounded-md border p-2"

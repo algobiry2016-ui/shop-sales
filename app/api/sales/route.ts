@@ -40,10 +40,10 @@ export async function POST(request: Request) {
     !Number.isFinite(giftAmount) ||
     giftAmount < 0 ||
     total <= 0 ||
-    // "Other" needs a description, and deliveries need the customer's phone (it links
-    // shop orders to the delivery system).
+    // "Other" needs a description.
     (body.order_type === "other" && !clean(body.notes, 500)) ||
-    (body.fulfillment === "delivery" && !saudiMobile(body.customer_phone)) ||
+    // "Not specified" is only accepted for past sales.
+    ((body.order_type === "unknown" || body.fulfillment === "unknown") && !backdated) ||
     (saleDate != null && !isDate(saleDate)) ||
     (backdated && (profile.role !== "admin" || saleDate > localDate()))
   ) {

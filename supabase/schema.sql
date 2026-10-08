@@ -29,14 +29,14 @@ create table if not exists public.shop_sales (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
   employee_id uuid not null default auth.uid() references public.shop_staff (id),
-  order_type text not null constraint shop_sales_order_type_check check (order_type in ('ready_made', 'custom_arrangement', 'other')),
-  fulfillment text not null check (fulfillment in ('pickup', 'delivery')),
+  order_type text not null constraint shop_sales_order_type_check check (order_type in ('ready_made', 'custom_arrangement', 'other', 'unknown')),
+  fulfillment text not null constraint shop_sales_fulfillment_check check (fulfillment in ('pickup', 'delivery', 'unknown')),
   payment_method text not null check (payment_method in ('cash', 'card')),
   amount numeric(10, 2) not null check (amount > 0), -- total paid, including any gift
   gift_name text,
   gift_amount numeric(10, 2) not null default 0 check (gift_amount >= 0),
   customer_name text,
-  customer_phone text, -- required for deliveries; links shop orders to the delivery system
+  customer_phone text, -- stored as 05XXXXXXXX when valid; links shop orders to the delivery system
   notes text
 );
 

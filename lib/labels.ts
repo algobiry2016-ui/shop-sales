@@ -6,11 +6,13 @@ export const ORDER_TYPES = {
   ready_made: { ar: "جاهز", en: "Ready-made" },
   custom_arrangement: { ar: "تنسيق من المنسق", en: "Prepared by Coordinator" },
   other: { ar: "أخرى", en: "Other" },
+  unknown: { ar: "غير محدد", en: "Not specified" },
 } as const satisfies Record<string, Bilingual>;
 
 export const FULFILLMENT = {
   pickup: { ar: "استلام من المحل", en: "Pickup" },
   delivery: { ar: "توصيل", en: "Delivery" },
+  unknown: { ar: "غير محدد", en: "Not specified" },
 } as const satisfies Record<string, Bilingual>;
 
 export const PAYMENT_METHODS = {
@@ -48,7 +50,6 @@ export const T = {
   gifts: { ar: "الهدايا", en: "Gifts" },
   gift: { ar: "هدية", en: "Gift" },
   notesRequired: { ar: "ملاحظات: اكتب وش الطلب", en: "Notes: describe the order" },
-  phoneRequired: { ar: "جوال العميل (مطلوب للتوصيل)", en: "Customer Phone (required for delivery)" },
   print: { ar: "طباعة", en: "Print" },
   saleDate: { ar: "تاريخ العملية", en: "Sale Date" },
   pastDateNote: { ar: "تاريخ سابق: ما يرسل تنبيه تيليجرام", en: "Past date: no Telegram alert" },
