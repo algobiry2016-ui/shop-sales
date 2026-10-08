@@ -20,7 +20,7 @@ export function LiveRefresh() {
     };
   }, [router]);
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs text-muted">
       <span className="h-2 w-2 animate-pulse rounded-full bg-green-600" />
       {bi(T.live)}
     </span>
@@ -53,7 +53,7 @@ export function PeriodPicker({ type, value }: { type: "date" | "month"; value: s
       value={value}
       dir="ltr"
       onChange={(e) => e.target.value && router.push(`?${type}=${e.target.value}`)}
-      className="rounded-lg border p-2"
+      className="rounded-sm border p-2"
     />
   );
 }

@@ -44,22 +44,22 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 shadow">
+      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5 rounded-md border border-line bg-white p-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Logo" className="mx-auto h-24 w-auto" />
-        <h1 className="text-center text-xl font-bold text-pink-700">
-          <Bi l={T.appName} />
+        <h1 className="border-b border-line pb-5 text-center text-lg font-medium">
+          <Bi l={T.appName} display />
         </h1>
         <label className="block">
-          <Bi l={T.phone} className="mb-1 text-sm font-semibold" />
-          <input name="login" type="text" inputMode="tel" autoComplete="username" placeholder="05xxxxxxxx" required dir="ltr" className="w-full rounded-lg border p-3" />
+          <Bi l={T.phone} className="mb-1.5 text-sm font-medium" />
+          <input name="login" type="text" inputMode="tel" autoComplete="username" placeholder="05xxxxxxxx" required dir="ltr" className="w-full rounded-md border p-3" />
         </label>
         <label className="block">
-          <Bi l={T.password} className="mb-1 text-sm font-semibold" />
-          <input name="password" type="password" required dir="ltr" className="w-full rounded-lg border p-3" />
+          <Bi l={T.password} className="mb-1.5 text-sm font-medium" />
+          <input name="password" type="password" required dir="ltr" className="w-full rounded-md border p-3" />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button disabled={loading} className="w-full rounded-lg bg-pink-700 p-3 font-bold text-white disabled:opacity-50">
+        <button disabled={loading} className="w-full rounded-md bg-ink p-3 font-semibold text-white transition hover:bg-black disabled:opacity-50">
           <Bi l={T.login} />
         </button>
       </form>

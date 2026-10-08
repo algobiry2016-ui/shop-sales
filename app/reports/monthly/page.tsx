@@ -24,17 +24,17 @@ export default async function MonthlyReport({ searchParams }: { searchParams: Pr
       <main className="mx-auto max-w-5xl space-y-4 p-4">
         <Card>
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            <h1 className="me-auto text-xl font-bold text-pink-700">
-              <Bi l={T.monthlyReport} />
+            <h1 className="me-auto text-2xl font-semibold">
+              <Bi l={T.monthlyReport} display />
             </h1>
             <PeriodPicker type="month" value={month} />
-            <a href={`/api/export?month=${month}`} className="rounded-lg bg-emerald-700 px-3 py-2 text-sm text-white">
+            <a href={`/api/export?month=${month}`} className="rounded-sm border border-ink px-3 py-2 text-sm transition hover:bg-ink hover:text-white">
               <Bi l={T.exportExcel} />
             </a>
           </div>
           <TotalsRow totals={s.totals} />
         </Card>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <Breakdown title={T.byEmployee} rows={s.byEmployee} />
           </Card>
@@ -50,7 +50,7 @@ export default async function MonthlyReport({ searchParams }: { searchParams: Pr
             title={T.byDay}
             rows={s.byDay}
             labelOf={(d) => (
-              <Link href={`/reports/daily?date=${d}`} className="text-pink-700 underline" dir="ltr">
+              <Link href={`/reports/daily?date=${d}`} className="underline underline-offset-4" dir="ltr">
                 {d}
               </Link>
             )}

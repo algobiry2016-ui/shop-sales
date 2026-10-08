@@ -24,18 +24,18 @@ export default async function DailyReport({ searchParams }: { searchParams: Prom
       <main className="mx-auto max-w-5xl space-y-4 p-4">
         <Card>
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            <h1 className="me-auto text-xl font-bold text-pink-700">
-              <Bi l={T.dailyReport} />
+            <h1 className="me-auto text-2xl font-semibold">
+              <Bi l={T.dailyReport} display />
             </h1>
             {isToday && <LiveRefresh />}
             <PeriodPicker type="date" value={date} />
-            <a href={`/api/export?date=${date}`} className="rounded-lg bg-emerald-700 px-3 py-2 text-sm text-white">
+            <a href={`/api/export?date=${date}`} className="rounded-sm border border-ink px-3 py-2 text-sm transition hover:bg-ink hover:text-white">
               <Bi l={T.exportExcel} />
             </a>
           </div>
           <TotalsRow totals={s.totals} />
         </Card>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <Breakdown title={T.byEmployee} rows={s.byEmployee} />
           </Card>
@@ -47,7 +47,7 @@ export default async function DailyReport({ searchParams }: { searchParams: Prom
           </Card>
         </div>
         <Card>
-          <h2 className="mb-3 text-lg font-bold">
+          <h2 className="mb-3 text-lg font-semibold">
             <Bi l={T.transactions} />
           </h2>
           <SalesTable sales={sales} showEmployee canDelete />

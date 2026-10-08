@@ -20,15 +20,15 @@ function Choice<K extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 font-semibold">
+      <legend className="mb-2 font-medium">
         <Bi l={title} />
       </legend>
       <div className="grid grid-cols-2 gap-2">
         {(Object.keys(options) as K[]).map((k) => (
           <label
             key={k}
-            className={`cursor-pointer rounded-xl border-2 p-3 text-center font-semibold transition ${
-              value === k ? "border-pink-700 bg-pink-50 text-pink-800" : "border-gray-200 bg-white"
+            className={`cursor-pointer rounded-md border p-3 text-center font-medium transition ${
+              value === k ? "border-ink bg-ink text-white" : "border-line bg-white hover:border-ink"
             }`}
           >
             <input type="radio" name={name} value={k} checked={value === k} onChange={() => onChange(k)} className="sr-only" required />
@@ -89,28 +89,28 @@ export function SaleForm() {
 
       <label className="block">
         <Bi l={T.amount} className="mb-1 font-semibold" />
-        <input name="amount" type="number" inputMode="decimal" min="0.01" step="0.01" required dir="ltr" className="w-full rounded-xl border-2 p-3 text-2xl font-bold" />
+        <input name="amount" type="number" inputMode="decimal" min="0.01" step="0.01" required dir="ltr" className="w-full rounded-md border p-3 text-2xl font-semibold" />
       </label>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <Bi l={T.customerName} className="mb-1 text-sm" />
-          <input name="customer_name" maxLength={100} className="w-full rounded-lg border p-2" />
+          <input name="customer_name" maxLength={100} className="w-full rounded-md border p-2" />
         </label>
         <label className="block">
           <Bi l={T.customerPhone} className="mb-1 text-sm" />
-          <input name="customer_phone" type="tel" maxLength={30} dir="ltr" className="w-full rounded-lg border p-2" />
+          <input name="customer_phone" type="tel" maxLength={30} dir="ltr" className="w-full rounded-md border p-2" />
         </label>
       </div>
       <label className="block">
         <Bi l={T.notes} className="mb-1 text-sm" />
-        <textarea name="notes" rows={2} maxLength={500} className="w-full rounded-lg border p-2" />
+        <textarea name="notes" rows={2} maxLength={500} className="w-full rounded-md border p-2" />
       </label>
 
       {error && <p className="text-red-600">{error}</p>}
       <button
         disabled={status === "saving"}
-        className={`w-full rounded-xl p-4 text-xl font-bold text-white disabled:opacity-50 ${status === "saved" ? "bg-green-600" : "bg-pink-700"}`}
+        className={`w-full rounded-md p-4 text-lg font-semibold text-white transition disabled:opacity-50 ${status === "saved" ? "bg-[#4b5e45]" : "bg-ink hover:bg-black"}`}
       >
         <Bi l={status === "saved" ? T.saved : T.save} />
       </button>

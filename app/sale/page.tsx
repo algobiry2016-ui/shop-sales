@@ -24,13 +24,13 @@ export default async function SalePage() {
       <Nav profile={profile} active="sale" />
       <main className="mx-auto max-w-2xl space-y-4 p-4">
         <Card>
-          <h1 className="mb-4 text-xl font-bold text-pink-700">
-            <Bi l={T.newSale} />
+          <h1 className="mb-4 text-2xl font-semibold">
+            <Bi l={T.newSale} display />
           </h1>
           <SaleForm />
         </Card>
         <Card>
-          <h2 className="mb-3 text-lg font-bold">
+          <h2 className="mb-3 text-lg font-semibold">
             <Bi l={T.mySalesToday} />
           </h2>
           <TotalsRow totals={summarize(sales).totals} />

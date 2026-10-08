@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --brand: #be185d;
+/* Brand: black & white like the DOCUMENTATION logo, with warm neutrals. */
+@theme {
+  --color-ink: #161616;
+  --color-paper: #faf8f5;
+  --color-line: #e5e0d8;
+  --color-muted: #7a736b;
+  --color-sand: #efe9e1;
+  --color-stone: #ddd6cc;
+  --font-sans: var(--font-plex), system-ui, sans-serif;
+  --font-display: var(--font-cinzel), var(--font-plex), serif;
 }
 
 body {
-  background: #fdf2f8;
-  color: #1f2937;
-  font-family: "Tahoma", "Segoe UI", system-ui, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+input,
+textarea {
+  border-color: var(--color-line);
+  background: #fff;
+}
+
+input:focus,
+textarea:focus {
+  outline: 1.5px solid var(--color-ink);
+  outline-offset: 0;
 }
