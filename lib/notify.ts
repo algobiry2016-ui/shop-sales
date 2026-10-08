@@ -1,5 +1,6 @@
 import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, type Fulfillment, type OrderType, type PaymentMethod } from "./labels";
-import { localTime } from "./time";
+import { money, type summarize } from "./report";
+import { localTime, weekday } from "./time";
 
 export type SaleMessage = {
   employee: string;
@@ -27,6 +28,34 @@ export function formatSaleMessage(s: SaleMessage): string {
   if (s.customer_name) lines.push(`🙋 العميل / Customer: ${s.customer_name}`);
   if (s.notes) lines.push(`📝 ملاحظات / Notes: ${s.notes}`);
   lines.push(`🕒 ${localTime(s.created_at)}`);
+  return lines.join("\n");
+}
+
+/** End-of-day summary for the managers. */
+export function formatDailySummary(date: string, s: ReturnType<typeof summarize>): string {
+  const day = weekday(date);
+  const t = s.totals;
+  const lines = [
+    `📊 ملخص اليوم / Daily Summary`,
+    `${day.ar} ${date}`,
+    "",
+    `💰 الإجمالي / Total: ${money(t.total)} SAR`,
+    `💵 كاش / Cash: ${money(t.cash)}`,
+    `💳 شبكة / Card: ${money(t.card)}`,
+    `🧾 عدد العمليات / Transactions: ${t.count}`,
+  ];
+  if (t.giftCount) lines.push(`🎀 الهدايا / Gifts: ${money(t.gifts)} (× ${t.giftCount})`);
+  if (s.byEmployee.size) {
+    lines.push("", "👤 حسب الموظف / By Employee:");
+    for (const [name, e] of s.byEmployee) lines.push(`• ${name}: ${money(e.total)} (${e.count})`);
+  }
+  if (s.byOrderType.size) {
+    lines.push("", "🎁 حسب النوع / By Type:");
+    for (const [type, e] of s.byOrderType) lines.push(`• ${ORDER_TYPES[type as OrderType].ar}: ${money(e.total)} (${e.count})`);
+  }
+  const deliveries = s.byFulfillment.get("delivery");
+  if (deliveries) lines.push("", `🚚 توصيل / Deliveries: ${deliveries.count}`);
+  if (t.count === 0) lines.push("", "لا توجد مبيعات اليوم / No sales today");
   return lines.join("\n");
 }
 

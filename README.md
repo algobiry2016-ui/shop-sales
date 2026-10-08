@@ -58,6 +58,8 @@ select id, 'الاسم / Name', 'employee' from auth.users where email = '9665XX
 3. في Vercel أضف `TELEGRAM_BOT_TOKEN`، وسوِّ **Redeploy**.
 4. ادخل النظام كمدير وافتح `/api/telegram/chats`، وانسخ رقم القروب (يبدأ بـ `-`) إلى `TELEGRAM_CHAT_ID` في Vercel، وسوِّ **Redeploy**.
 
+**الملخص اليومي (11 مساءً):** أضف في Vercel `SUPABASE_SECRET_KEY` (من Supabase: **Project Settings → API Keys → Secret key**)، و`CRON_SECRET` (أي كلمة طويلة عشوائية)، وسوِّ **Redeploy**.
+
 ### 4) النشر على Vercel (مجاني)
 
 1. سجّل في [vercel.com](https://vercel.com) بحساب GitHub، واستورد مستودع `shop-sales`.
