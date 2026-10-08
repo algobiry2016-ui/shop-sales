@@ -25,7 +25,7 @@ export default async function SalePage() {
         <h1 className="mb-4 text-2xl font-semibold">
           <Bi l={T.newSale} display />
         </h1>
-        <SaleForm />
+        <SaleForm canBackdate={profile.role === "admin"} today={localDate()} />
       </Card>
       <Card>
         <h2 className="mb-3 text-lg font-semibold">

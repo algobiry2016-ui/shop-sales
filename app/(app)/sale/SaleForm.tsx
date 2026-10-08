@@ -40,7 +40,8 @@ function Choice<K extends string>({
   );
 }
 
-export function SaleForm() {
+/** `today` is the shop's date (Riyadh); managers may record a sale on an earlier date. */
+export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean; today: string }) {
   const router = useRouter();
   const [orderType, setOrderType] = useState<OrderType | "">("");
   const [fulfillment, setFulfillment] = useState<Fulfillment | "">("pickup");
@@ -49,6 +50,7 @@ export function SaleForm() {
   const [amount, setAmount] = useState("");
   const [giftAmount, setGiftAmount] = useState("");
   const total = (Number(amount) || 0) + (withGift === "yes" ? Number(giftAmount) || 0 : 0);
+  const [saleDate, setSaleDate] = useState(today);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState("");
 
@@ -72,6 +74,7 @@ export function SaleForm() {
         customer_name: form.get("customer_name"),
         customer_phone: form.get("customer_phone"),
         notes: form.get("notes"),
+        sale_date: canBackdate && saleDate !== today ? saleDate : undefined,
       }),
     });
     if (!res.ok) {
@@ -93,6 +96,21 @@ export function SaleForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
+      {canBackdate && (
+        <label className="block">
+          <Bi l={T.saleDate} className="mb-1 font-medium" />
+          <input
+            type="date"
+            value={saleDate}
+            max={today}
+            required
+            onChange={(e) => setSaleDate(e.target.value)}
+            dir="ltr"
+            className={`w-full rounded-md border p-3 ${saleDate !== today ? "border-ink bg-sand" : ""}`}
+          />
+          {saleDate !== today && <Bi l={T.pastDateNote} className="mt-1 text-xs text-muted" />}
+        </label>
+      )}
       <Choice name="order_type" title={T.orderType} options={ORDER_TYPES} value={orderType} onChange={setOrderType} />
       <Choice name="fulfillment" title={T.fulfillment} options={FULFILLMENT} value={fulfillment} onChange={setFulfillment} />
       <Choice name="payment_method" title={T.paymentMethod} options={PAYMENT_METHODS} value={payment} onChange={setPayment} />

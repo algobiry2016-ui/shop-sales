@@ -50,6 +50,8 @@ export const T = {
   notesRequired: { ar: "ملاحظات: اكتب وش الطلب", en: "Notes: describe the order" },
   phoneRequired: { ar: "جوال العميل (مطلوب للتوصيل)", en: "Customer Phone (required for delivery)" },
   print: { ar: "طباعة", en: "Print" },
+  saleDate: { ar: "تاريخ العملية", en: "Sale Date" },
+  pastDateNote: { ar: "تاريخ سابق: ما يرسل تنبيه تيليجرام", en: "Past date: no Telegram alert" },
   date: { ar: "التاريخ", en: "Date" },
   dailyBreakdown: { ar: "تقرير كل يوم", en: "Day by Day" },
   monthTotal: { ar: "إجمالي الشهر", en: "Month Total" },

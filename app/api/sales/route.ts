@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS } from "@/lib/labels";
 import { createClient, getProfile } from "@/lib/supabase/server";
+import { isDate, localDate } from "@/lib/time";
 import { formatSaleMessage, notifyManagers } from "@/lib/notify";
 
 const clean = (v: unknown, max: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
@@ -25,6 +26,9 @@ export async function POST(request: Request) {
   const giftName = body?.with_gift ? clean(body.gift_name, 100) : null;
   const giftAmount = giftName ? Number(body.gift_amount) : 0;
   const total = Math.round((base + giftAmount) * 100) / 100;
+  // Managers can enter past sales; they are stamped at noon Riyadh time on that date.
+  const saleDate = body?.sale_date;
+  const backdated = isDate(saleDate) && saleDate !== localDate();
   if (
     !body ||
     !(body.order_type in ORDER_TYPES) ||
@@ -39,7 +43,9 @@ export async function POST(request: Request) {
     // "Other" needs a description, and deliveries need the customer's phone (it links
     // shop orders to the delivery system).
     (body.order_type === "other" && !clean(body.notes, 500)) ||
-    (body.fulfillment === "delivery" && !saudiMobile(body.customer_phone))
+    (body.fulfillment === "delivery" && !saudiMobile(body.customer_phone)) ||
+    (saleDate != null && !isDate(saleDate)) ||
+    (backdated && (profile.role !== "admin" || saleDate > localDate()))
   ) {
     return NextResponse.json({ error: "بيانات غير صحيحة / Invalid data" }, { status: 400 });
   }
@@ -58,13 +64,15 @@ export async function POST(request: Request) {
       customer_name: clean(body.customer_name, 100),
       customer_phone: saudiMobile(body.customer_phone) ?? clean(body.customer_phone, 30),
       notes: clean(body.notes, 500),
+      ...(backdated ? { created_at: new Date(`${saleDate}T12:00:00+03:00`).toISOString() } : {}),
     })
     .select()
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  await notifyManagers(formatSaleMessage({ ...sale, amount: Number(sale.amount), gift_amount: Number(sale.gift_amount), employee: profile.full_name }));
+  // Past sales entered by a manager don't trigger a Telegram alert.
+  if (!backdated) await notifyManagers(formatSaleMessage({ ...sale, amount: Number(sale.amount), gift_amount: Number(sale.gift_amount), employee: profile.full_name }));
 
   return NextResponse.json({ sale });
 }
