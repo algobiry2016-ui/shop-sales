@@ -5,6 +5,16 @@ import { formatSaleMessage, notifyManagers } from "@/lib/whatsapp";
 
 const clean = (v: unknown, max: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
 
+/**
+ * Saudi mobile in one format (05XXXXXXXX) so shop orders can be matched by phone in the
+ * delivery system. Accepts 05…, 5…, 9665…, +9665…, 009665…; returns null otherwise.
+ */
+function saudiMobile(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const digits = v.replace(/\D/g, "").replace(/^00/, "").replace(/^966/, "").replace(/^0/, "");
+  return /^5\d{8}$/.test(digits) ? `0${digits}` : null;
+}
+
 export async function POST(request: Request) {
   const profile = await getProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,7 +39,7 @@ export async function POST(request: Request) {
     // "Other" needs a description, and deliveries need the customer's phone (it links
     // shop orders to the delivery system).
     (body.order_type === "other" && !clean(body.notes, 500)) ||
-    (body.fulfillment === "delivery" && !clean(body.customer_phone, 30))
+    (body.fulfillment === "delivery" && !saudiMobile(body.customer_phone))
   ) {
     return NextResponse.json({ error: "بيانات غير صحيحة / Invalid data" }, { status: 400 });
   }
@@ -46,7 +56,7 @@ export async function POST(request: Request) {
       gift_name: giftName,
       gift_amount: Math.round(giftAmount * 100) / 100,
       customer_name: clean(body.customer_name, 100),
-      customer_phone: clean(body.customer_phone, 30),
+      customer_phone: saudiMobile(body.customer_phone) ?? clean(body.customer_phone, 30),
       notes: clean(body.notes, 500),
     })
     .select()

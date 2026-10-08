@@ -143,7 +143,18 @@ export function SaleForm() {
         </label>
         <label className="block">
           <Bi l={fulfillment === "delivery" ? T.phoneRequired : T.customerPhone} className="mb-1 text-sm" />
-          <input name="customer_phone" type="tel" maxLength={30} required={fulfillment === "delivery"} dir="ltr" className="w-full rounded-md border p-2" />
+          <input
+            name="customer_phone"
+            type="tel"
+            inputMode="tel"
+            maxLength={30}
+            required={fulfillment === "delivery"}
+            pattern={fulfillment === "delivery" ? "(\\+?966|00966|0)?5[0-9]{8}" : undefined}
+            title="05XXXXXXXX"
+            placeholder="05XXXXXXXX"
+            dir="ltr"
+            className="w-full rounded-md border p-2"
+          />
         </label>
       </div>
       <label className="block">
