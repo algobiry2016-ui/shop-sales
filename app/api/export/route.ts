@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("sales")
+    .from("shop_sales")
     .select(SALE_COLUMNS)
     .gte("created_at", range[0])
     .lt("created_at", range[1])
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const rows = (data as unknown as Sale[]).map((s) => [
     localDate(s.created_at),
     localTime(s.created_at),
-    s.profiles?.full_name,
+    s.staff?.full_name,
     bi(ORDER_TYPES[s.order_type]),
     bi(FULFILLMENT[s.fulfillment]),
     bi(PAYMENT_METHODS[s.payment_method]),

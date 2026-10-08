@@ -25,14 +25,18 @@ export async function POST(request: Request) {
     (body.with_gift && !giftName) ||
     !Number.isFinite(giftAmount) ||
     giftAmount < 0 ||
-    total <= 0
+    total <= 0 ||
+    // "Other" needs a description, and deliveries need the customer's phone (it links
+    // shop orders to the delivery system).
+    (body.order_type === "other" && !clean(body.notes, 500)) ||
+    (body.fulfillment === "delivery" && !clean(body.customer_phone, 30))
   ) {
     return NextResponse.json({ error: "بيانات غير صحيحة / Invalid data" }, { status: 400 });
   }
 
   const supabase = await createClient();
   const { data: sale, error } = await supabase
-    .from("sales")
+    .from("shop_sales")
     .insert({
       employee_id: profile.id,
       order_type: body.order_type,

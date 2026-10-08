@@ -28,3 +28,16 @@ textarea:focus {
   outline: 1.5px solid var(--color-ink);
   outline-offset: 0;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  section {
+    break-inside: avoid;
+    border-color: #ccc;
+  }
+}

@@ -15,11 +15,11 @@ export type Sale = {
   customer_name: string | null;
   customer_phone: string | null;
   notes: string | null;
-  profiles: { full_name: string } | null;
+  staff: { full_name: string } | null;
 };
 
 export const SALE_COLUMNS =
-  "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, gift_name, gift_amount, customer_name, customer_phone, notes, profiles(full_name)";
+  "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, gift_name, gift_amount, customer_name, customer_phone, notes, staff:shop_staff(full_name)";
 
 export type Totals = { total: number; cash: number; card: number; count: number; gifts: number; giftCount: number };
 
@@ -51,7 +51,7 @@ export function summarize(sales: Sale[]) {
   sales.forEach((s) => add(totals, s));
   return {
     totals,
-    byEmployee: groupBy(sales, (s) => s.profiles?.full_name ?? "—"),
+    byEmployee: groupBy(sales, (s) => s.staff?.full_name ?? "—"),
     byOrderType: groupBy(sales, (s) => s.order_type),
     byFulfillment: groupBy(sales, (s) => s.fulfillment),
     byDay: groupBy(sales, (s) => localDate(s.created_at)),

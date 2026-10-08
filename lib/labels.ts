@@ -5,8 +5,7 @@ export type Bilingual = { ar: string; en: string };
 export const ORDER_TYPES = {
   ready_made: { ar: "جاهز", en: "Ready-made" },
   custom_arrangement: { ar: "تنسيق من المنسق", en: "Prepared by Coordinator" },
-  gift_wrapping: { ar: "تغليف", en: "Gift Wrapping" },
-  customer_gift_wrapping: { ar: "تغليف هدية العميل", en: "Wrapping Customer's Gift" },
+  other: { ar: "أخرى", en: "Other" },
 } as const satisfies Record<string, Bilingual>;
 
 export const FULFILLMENT = {
@@ -48,6 +47,13 @@ export const T = {
   flowersAmount: { ar: "سعر الطلب بدون الهدية (ريال)", en: "Order Price without Gift (SAR)" },
   gifts: { ar: "الهدايا", en: "Gifts" },
   gift: { ar: "هدية", en: "Gift" },
+  notesRequired: { ar: "ملاحظات: اكتب وش الطلب", en: "Notes: describe the order" },
+  phoneRequired: { ar: "جوال العميل (مطلوب للتوصيل)", en: "Customer Phone (required for delivery)" },
+  print: { ar: "طباعة", en: "Print" },
+  date: { ar: "التاريخ", en: "Date" },
+  dailyBreakdown: { ar: "تقرير كل يوم", en: "Day by Day" },
+  monthTotal: { ar: "إجمالي الشهر", en: "Month Total" },
+  loading: { ar: "جاري التحميل…", en: "Loading…" },
   save: { ar: "حفظ", en: "Save" },
   saved: { ar: "تم الحفظ ✓", en: "Saved ✓" },
   mySalesToday: { ar: "عملياتي اليوم", en: "My Sales Today" },

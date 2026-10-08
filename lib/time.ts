@@ -34,3 +34,26 @@ export function monthRange(month: string): [string, string] {
 
 export const isDate = (s: unknown): s is string => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 export const isMonth = (s: unknown): s is string => typeof s === "string" && /^\d{4}-\d{2}$/.test(s);
+
+/** Weekday name of a YYYY-MM-DD date, e.g. { ar: "الأحد", en: "Sun" }. */
+export function weekday(date: string): { ar: string; en: string } {
+  const d = new Date(`${date}T12:00:00Z`);
+  return {
+    ar: d.toLocaleDateString("ar-SA", { weekday: "long", timeZone: "UTC" }),
+    en: d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }),
+  };
+}
+
+/** Every date of a month up to today (all of it for past months). */
+export function daysOfMonth(month: string): string[] {
+  const [y, m] = month.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const today = localDate();
+  const days: string[] = [];
+  for (let d = 1; d <= last; d++) {
+    const date = `${month}-${String(d).padStart(2, "0")}`;
+    if (date > today) break;
+    days.push(date);
+  }
+  return days;
+}

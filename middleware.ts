@@ -16,9 +16,9 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims verifies the session token locally when possible (no round trip to Supabase Auth).
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
 
   const path = request.nextUrl.pathname;
   if (!user && path !== "/login" && !path.startsWith("/api/")) {

@@ -142,13 +142,13 @@ export function SaleForm() {
           <input name="customer_name" maxLength={100} className="w-full rounded-md border p-2" />
         </label>
         <label className="block">
-          <Bi l={T.customerPhone} className="mb-1 text-sm" />
-          <input name="customer_phone" type="tel" maxLength={30} dir="ltr" className="w-full rounded-md border p-2" />
+          <Bi l={fulfillment === "delivery" ? T.phoneRequired : T.customerPhone} className="mb-1 text-sm" />
+          <input name="customer_phone" type="tel" maxLength={30} required={fulfillment === "delivery"} dir="ltr" className="w-full rounded-md border p-2" />
         </label>
       </div>
       <label className="block">
-        <Bi l={T.notes} className="mb-1 text-sm" />
-        <textarea name="notes" rows={2} maxLength={500} className="w-full rounded-md border p-2" />
+        <Bi l={orderType === "other" ? T.notesRequired : T.notes} className="mb-1 text-sm" />
+        <textarea name="notes" rows={2} maxLength={500} required={orderType === "other"} className="w-full rounded-md border p-2" />
       </label>
 
       {error && <p className="text-red-600">{error}</p>}

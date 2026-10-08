@@ -6,13 +6,15 @@
 ## المميزات
 
 - **تسجيل عملية / New Sale**:
-  - نوع الطلب: جاهز / Ready-made، تنسيق من المنسق / Prepared by Coordinator، تغليف / Gift Wrapping، تغليف هدية العميل / Wrapping Customer's Gift
+  - نوع الطلب: جاهز / Ready-made، تنسيق من المنسق / Prepared by Coordinator، أخرى / Other
+  - مع هدية؟ (سلسال أو غيره) بسعرها
   - الاستلام: استلام من المحل / Pickup، توصيل / Delivery
   - الدفع: كاش / Cash، شبكة / Card
   - المبلغ، واسم العميل وجواله والملاحظات (اختيارية)
 - **إشعار واتساب** لك ولسعود مع كل عملية جديدة
 - **التقرير اليومي / Daily Report**: الإجمالي والكاش والشبكة، وتفصيل حسب الموظف ونوع الطلب والاستلام، وقائمة العمليات. يتحدث مباشرة أول ما تتسجل عملية.
-- **التقرير الشهري / Monthly Report**: نفس التفاصيل للشهر كامل، مع مبيعات كل يوم
+- **التقرير الشهري / Monthly Report**: تقرير كل يوم بيومه وتاريخه، مع مجموع يطابق إجمالي الشهر
+- **طباعة** أي تقرير
 - **تصدير Excel** لأي يوم أو شهر
 - **الصلاحيات**: الموظف يسجل ويشوف عملياته هو فقط. المدير يشوف كل شي ويقدر يحذف العملية الغلط.
 
@@ -36,18 +38,17 @@ Next.js وSupabase (قاعدة بيانات PostgreSQL)، والاستضافة �
 
 ### 2) إضافة المستخدمين
 
-الدخول يكون **برقم الجوال وكلمة مرور**. في Supabase يتسجل الرقم كإيميل بهذا الشكل: `9665XXXXXXXX@shop.com`
-(يعني الرقم يبدأ بـ 966 وبدون الصفر).
+- **الموظفين** يدخلون برقم الجوال. في Supabase يتسجل الرقم كإيميل بهذا الشكل: `9665XXXXXXXX@shop.com` (الرقم يبدأ بـ 966 وبدون الصفر).
+- **المدراء** يدخلون بإيميلهم.
 
 من **Authentication → Users → Add user → Create new user** أنشئ حساب لكل شخص، وفعّل **Auto Confirm User**.
 
-بعدها في **SQL Editor** حدّد الأسماء وصلاحيات المدراء:
+الحساب لحاله **ما يكفي**: لازم تضيف الشخص لقائمة النظام في **SQL Editor** (غيّر الإيميل والاسم):
 
 ```sql
-update profiles set full_name = 'رياض / Riyadh' where id = (select id from auth.users where email = '9665XXXXXXXX@shop.com');
-update profiles set full_name = 'سجيب / Sajeeb' where id = (select id from auth.users where email = '9665YYYYYYYY@shop.com');
-update profiles set full_name = 'سعود / Saud', role = 'admin' where id = (select id from auth.users where email = 'saud@shop.com');
-update profiles set full_name = 'رؤوف / Raouf', role = 'admin' where id = (select id from auth.users where email = 'owner@shop.com');
+insert into shop_staff (id, full_name, role)
+select id, 'الاسم / Name', 'employee' from auth.users where email = '9665XXXXXXXX@shop.com';
+-- للمدير: اكتب 'admin' بدل 'employee'
 ```
 
 ### 3) تفعيل إشعارات الواتساب (CallMeBot، مجاني)

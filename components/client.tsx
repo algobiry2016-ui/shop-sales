@@ -1,10 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { T, bi } from "@/lib/labels";
+import { T, bi, type Bilingual } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/client";
-import { Bi } from "./ui";
+import { Bi } from "./bi";
 
 /** Re-renders the page whenever a sale is added or deleted. */
 export function LiveRefresh() {
@@ -13,7 +14,7 @@ export function LiveRefresh() {
     const supabase = createClient();
     const channel = supabase
       .channel("sales-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "sales" }, () => router.refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "shop_sales" }, () => router.refresh())
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -38,7 +39,7 @@ export function DeleteSaleButton({ id }: { id: number }) {
     router.refresh();
   }
   return (
-    <button onClick={onClick} disabled={busy} className="rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50">
+    <button onClick={onClick} disabled={busy} className="no-print rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50">
       <Bi l={T.delete} />
     </button>
   );
@@ -55,5 +56,30 @@ export function PeriodPicker({ type, value }: { type: "date" | "month"; value: s
       onChange={(e) => e.target.value && router.push(`?${type}=${e.target.value}`)}
       className="rounded-sm border p-2"
     />
+  );
+}
+
+export function NavLinks({ links }: { links: { href: string; label: Bilingual }[] }) {
+  const pathname = usePathname();
+  return (
+    <nav className="order-last flex w-full gap-1 text-sm md:order-none md:w-auto">
+      {links.map((l) => (
+        <Link
+          key={l.href}
+          href={l.href}
+          className={`flex-1 rounded-sm px-3 py-1.5 text-center transition md:flex-none ${pathname.startsWith(l.href) ? "bg-ink text-white" : "hover:bg-sand"}`}
+        >
+          <Bi l={l.label} />
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function PrintButton() {
+  return (
+    <button onClick={() => window.print()} className="no-print rounded-sm border border-line px-3 py-2 text-sm transition hover:bg-sand">
+      <Bi l={T.print} />
+    </button>
   );
 }

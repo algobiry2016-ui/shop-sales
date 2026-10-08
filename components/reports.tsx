@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, T, type Bilingual } from "@/lib/labels";
 import { money, type Sale, type Totals } from "@/lib/report";
-import { localTime } from "@/lib/time";
+import { localTime, weekday } from "@/lib/time";
 import { DeleteSaleButton } from "./client";
-import { Bi } from "./ui";
+import { Bi } from "./bi";
 
 export function TotalsRow({ totals }: { totals: Totals }) {
   const items: { label: Bilingual; value: string; sub?: string; color: string }[] = [
@@ -125,7 +126,7 @@ export function SalesTable({ sales, showEmployee = false, canDelete = false }: {
                 <Bi l={ORDER_TYPES[s.order_type]} className="font-medium" />
                 <div className="mt-1 text-xs text-muted">
                   <span dir="ltr">{localTime(s.created_at)}</span>
-                  {showEmployee && <> · {s.profiles?.full_name}</>} · {FULFILLMENT[s.fulfillment].ar} / {FULFILLMENT[s.fulfillment].en}
+                  {showEmployee && <> · {s.staff?.full_name}</>} · {FULFILLMENT[s.fulfillment].ar} / {FULFILLMENT[s.fulfillment].en}
                 </div>
                 <Details s={s} />
               </div>
@@ -156,7 +157,7 @@ export function SalesTable({ sales, showEmployee = false, canDelete = false }: {
             {sales.map((s) => (
               <tr key={s.id} className="border-t border-line align-top">
                 <td className="p-2" dir="ltr">{localTime(s.created_at)}</td>
-                {showEmployee && <td className="p-2 font-semibold">{s.profiles?.full_name}</td>}
+                {showEmployee && <td className="p-2 font-semibold">{s.staff?.full_name}</td>}
                 <td className="p-2">
                   <Bi l={ORDER_TYPES[s.order_type]} />
                   <Details s={s} />
@@ -175,5 +176,63 @@ export function SalesTable({ sales, showEmployee = false, canDelete = false }: {
         </table>
       </div>
     </>
+  );
+}
+
+/** One row per day of the month, with a total row that matches the month figures. */
+export function DayByDay({ days, byDay, totals }: { days: string[]; byDay: Map<string, Totals>; totals: Totals }) {
+  const rows = days.map((d) => ({ date: d, day: weekday(d), t: byDay.get(d) }));
+  const cell = (n: number | undefined) => (n ? money(n) : "—");
+  return (
+    <div>
+      <h2 className="mb-3 text-lg font-semibold">
+        <Bi l={T.dailyBreakdown} />
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="w-full whitespace-nowrap text-sm">
+          <thead className="border-b border-line text-muted">
+            <tr>
+              <th className="p-2 text-start"><Bi l={T.day} /></th>
+              <th className="hidden p-2 text-start sm:table-cell"><Bi l={T.count} /></th>
+              <th className="p-2 text-start"><Bi l={PAYMENT_METHODS.cash} /></th>
+              <th className="p-2 text-start"><Bi l={PAYMENT_METHODS.card} /></th>
+              <th className="hidden p-2 text-start sm:table-cell"><Bi l={T.gifts} /></th>
+              <th className="p-2 text-start"><Bi l={T.total} /></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ date, day, t }) => (
+              <tr key={date} className={`border-t border-line ${t ? "" : "text-muted"}`}>
+                <td className="p-2">
+                  <Link href={`/reports/daily?date=${date}`} className="group flex flex-col sm:flex-row sm:gap-3">
+                    <span>
+                      {day.ar} <span className="text-xs opacity-60">{day.en}</span>
+                    </span>
+                    <span className="text-xs underline underline-offset-4 group-hover:no-underline sm:text-sm" dir="ltr">
+                      {date}
+                    </span>
+                  </Link>
+                </td>
+                <td className="hidden p-2 sm:table-cell" dir="ltr">{t?.count ?? 0}</td>
+                <td className="p-2" dir="ltr">{cell(t?.cash)}</td>
+                <td className="p-2" dir="ltr">{cell(t?.card)}</td>
+                <td className="hidden p-2 sm:table-cell" dir="ltr">{cell(t?.gifts)}</td>
+                <td className="p-2 font-bold" dir="ltr">{cell(t?.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="border-t-2 border-ink font-bold">
+            <tr>
+              <td className="p-2"><Bi l={T.monthTotal} /></td>
+              <td className="hidden p-2 sm:table-cell" dir="ltr">{totals.count}</td>
+              <td className="p-2" dir="ltr">{money(totals.cash)}</td>
+              <td className="p-2" dir="ltr">{money(totals.card)}</td>
+              <td className="hidden p-2 sm:table-cell" dir="ltr">{money(totals.gifts)}</td>
+              <td className="p-2" dir="ltr">{money(totals.total)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
   );
 }
