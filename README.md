@@ -34,17 +34,18 @@ Next.js وSupabase (قاعدة بيانات PostgreSQL)، والاستضافة �
 
 ### 2) إضافة المستخدمين
 
-من **Authentication → Users → Add user → Create new user** أنشئ حساب لكل شخص (بريد وكلمة مرور، وفعّل **Auto Confirm User**):
-رياض، وسجيب، وأنت، وسعود.
+الدخول يكون **برقم الجوال وكلمة مرور**. في Supabase يتسجل الرقم كإيميل بهذا الشكل: `9665XXXXXXXX@shop.com`
+(يعني الرقم يبدأ بـ 966 وبدون الصفر).
 
-بعدها في **SQL Editor** حدّد الأسماء وصلاحيات المدراء (غيّر الإيميلات إلى الإيميلات الحقيقية):
+من **Authentication → Users → Add user → Create new user** أنشئ حساب لكل شخص، وفعّل **Auto Confirm User**.
+
+بعدها في **SQL Editor** حدّد الأسماء وصلاحيات المدراء:
 
 ```sql
-update profiles set full_name = 'رياض / Riyadh' where id = (select id from auth.users where email = 'riyadh@example.com');
-update profiles set full_name = 'سجيب / Sajeeb' where id = (select id from auth.users where email = 'sajeeb@example.com');
-
-update profiles set full_name = 'سعود / Saud', role = 'admin' where id = (select id from auth.users where email = 'saud@example.com');
-update profiles set full_name = 'المدير / Owner', role = 'admin' where id = (select id from auth.users where email = 'owner@example.com');
+update profiles set full_name = 'رياض / Riyadh' where id = (select id from auth.users where email = '9665XXXXXXXX@shop.com');
+update profiles set full_name = 'سجيب / Sajeeb' where id = (select id from auth.users where email = '9665YYYYYYYY@shop.com');
+update profiles set full_name = 'سعود / Saud', role = 'admin' where id = (select id from auth.users where email = 'saud@shop.com');
+update profiles set full_name = 'رؤوف / Raouf', role = 'admin' where id = (select id from auth.users where email = 'owner@shop.com');
 ```
 
 ### 3) تفعيل إشعارات الواتساب (CallMeBot، مجاني)

@@ -27,7 +27,7 @@ export const T = {
   appName: { ar: "مبيعات المحل", en: "Shop Sales" },
   login: { ar: "تسجيل الدخول", en: "Login" },
   logout: { ar: "خروج", en: "Logout" },
-  email: { ar: "البريد الإلكتروني", en: "Email" },
+  phone: { ar: "رقم الجوال", en: "Mobile Number" },
   password: { ar: "كلمة المرور", en: "Password" },
   newSale: { ar: "عملية جديدة", en: "New Sale" },
   orderType: { ar: "نوع الطلب", en: "Order Type" },

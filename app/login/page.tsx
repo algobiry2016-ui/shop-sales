@@ -6,6 +6,19 @@ import { Bi } from "@/components/ui";
 import { T } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Staff log in with their mobile number; it maps to an account email like 966501234567@shop.com.
+ * Anything containing "@" is used as an email as-is.
+ */
+function toLoginEmail(input: string): string {
+  const value = input.trim();
+  if (value.includes("@")) return value;
+  let digits = value.replace(/\D/g, "").replace(/^00/, "");
+  if (digits.startsWith("05")) digits = "966" + digits.slice(1);
+  else if (digits.length === 9 && digits.startsWith("5")) digits = "966" + digits;
+  return `${digits}@shop.com`;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -17,12 +30,12 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     const { error } = await createClient().auth.signInWithPassword({
-      email: String(form.get("email")),
+      email: toLoginEmail(String(form.get("login"))),
       password: String(form.get("password")),
     });
     setLoading(false);
     if (error) {
-      setError("بيانات الدخول غير صحيحة / Wrong email or password");
+      setError("بيانات الدخول غير صحيحة / Wrong phone or password");
       return;
     }
     router.replace("/");
@@ -36,8 +49,8 @@ export default function LoginPage() {
           🌸 <Bi l={T.appName} />
         </h1>
         <label className="block">
-          <Bi l={T.email} className="mb-1 text-sm font-semibold" />
-          <input name="email" type="email" required dir="ltr" className="w-full rounded-lg border p-3" />
+          <Bi l={T.phone} className="mb-1 text-sm font-semibold" />
+          <input name="login" type="text" inputMode="tel" autoComplete="username" placeholder="05xxxxxxxx" required dir="ltr" className="w-full rounded-lg border p-3" />
         </label>
         <label className="block">
           <Bi l={T.password} className="mb-1 text-sm font-semibold" />
