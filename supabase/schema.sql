@@ -45,7 +45,9 @@ create table if not exists public.sales (
   order_type text not null check (order_type in ('ready_made', 'custom_arrangement', 'gift_wrapping', 'customer_gift_wrapping')),
   fulfillment text not null check (fulfillment in ('pickup', 'delivery')),
   payment_method text not null check (payment_method in ('cash', 'card')),
-  amount numeric(10, 2) not null check (amount > 0),
+  amount numeric(10, 2) not null check (amount > 0), -- total paid, including any gift
+  gift_name text,
+  gift_amount numeric(10, 2) not null default 0 check (gift_amount >= 0),
   customer_name text,
   customer_phone text,
   notes text

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bi } from "@/components/ui";
 import { T } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +23,22 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Staff (Riyadh, Sajeeb) use their mobile number; managers use their email.
+  const [mode, setMode] = useState<"staff" | "manager">("staff");
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("loginMode") === "manager") setMode("manager");
+    } catch {}
+  }, []);
+
+  function pick(m: "staff" | "manager") {
+    setMode(m);
+    setError("");
+    try {
+      localStorage.setItem("loginMode", m);
+    } catch {}
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,7 +51,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (error) {
-      setError("بيانات الدخول غير صحيحة / Wrong phone or password");
+      setError(mode === "staff" ? "رقم الجوال أو كلمة المرور غير صحيحة / Wrong mobile number or password" : "الإيميل أو كلمة المرور غير صحيحة / Wrong email or password");
       return;
     }
     router.replace("/");
@@ -50,9 +66,25 @@ export default function LoginPage() {
         <h1 className="border-b border-line pb-5 text-center text-lg font-medium">
           <Bi l={T.appName} display />
         </h1>
+        <div className="grid grid-cols-2 gap-1 rounded-md border border-line p-1 text-sm">
+          {(["staff", "manager"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => pick(m)}
+              className={`rounded-sm py-2 transition ${mode === m ? "bg-ink text-white" : "hover:bg-sand"}`}
+            >
+              <Bi l={T[m]} />
+            </button>
+          ))}
+        </div>
         <label className="block">
-          <Bi l={T.phone} className="mb-1.5 text-sm font-medium" />
-          <input name="login" type="text" inputMode="tel" autoComplete="username" placeholder="05xxxxxxxx" required dir="ltr" className="w-full rounded-md border p-3" />
+          <Bi l={mode === "staff" ? T.phone : T.email} className="mb-1.5 text-sm font-medium" />
+          {mode === "staff" ? (
+            <input key="staff" name="login" type="tel" inputMode="tel" autoComplete="username" placeholder="05xxxxxxxx" required dir="ltr" className="w-full rounded-md border p-3" />
+          ) : (
+            <input key="manager" name="login" type="email" inputMode="email" autoComplete="username" placeholder="name@example.com" required dir="ltr" className="w-full rounded-md border p-3" />
+          )}
         </label>
         <label className="block">
           <Bi l={T.password} className="mb-1.5 text-sm font-medium" />

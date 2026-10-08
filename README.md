@@ -32,6 +32,8 @@ Next.js وSupabase (قاعدة بيانات PostgreSQL)، والاستضافة �
    - `Project URL`
    - `anon public key`
 
+> **تحديثات قاعدة البيانات:** إذا كانت القاعدة منشأة من قبل، شغّل ملفات `supabase/migrations/` بالترتيب في SQL Editor (مثل `002_gifts.sql` لخانة الهدية).
+
 ### 2) إضافة المستخدمين
 
 الدخول يكون **برقم الجوال وكلمة مرور**. في Supabase يتسجل الرقم كإيميل بهذا الشكل: `9665XXXXXXXX@shop.com`

@@ -8,24 +8,32 @@ export type Sale = {
   order_type: OrderType;
   fulfillment: Fulfillment;
   payment_method: PaymentMethod;
+  /** Total paid, including any gift. */
   amount: number;
+  gift_name: string | null;
+  gift_amount: number;
   customer_name: string | null;
   customer_phone: string | null;
   notes: string | null;
   profiles: { full_name: string } | null;
 };
 
-export const SALE_COLUMNS = "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, customer_name, customer_phone, notes, profiles(full_name)";
+export const SALE_COLUMNS =
+  "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, gift_name, gift_amount, customer_name, customer_phone, notes, profiles(full_name)";
 
-export type Totals = { total: number; cash: number; card: number; count: number };
+export type Totals = { total: number; cash: number; card: number; count: number; gifts: number; giftCount: number };
 
-const emptyTotals = (): Totals => ({ total: 0, cash: 0, card: 0, count: 0 });
+const emptyTotals = (): Totals => ({ total: 0, cash: 0, card: 0, count: 0, gifts: 0, giftCount: 0 });
 
 function add(t: Totals, s: Sale) {
   const amount = Number(s.amount);
   t.total += amount;
   t[s.payment_method] += amount;
   t.count += 1;
+  if (s.gift_name) {
+    t.gifts += Number(s.gift_amount);
+    t.giftCount += 1;
+  }
 }
 
 function groupBy(sales: Sale[], key: (s: Sale) => string): Map<string, Totals> {

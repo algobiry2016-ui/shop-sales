@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   const escape = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const header = ["التاريخ / Date", "الوقت / Time", "الموظف / Employee", "نوع الطلب / Order Type", "الاستلام / Pickup-Delivery", "الدفع / Payment", "المبلغ / Amount", "العميل / Customer", "الجوال / Phone", "ملاحظات / Notes"];
+  const header = ["التاريخ / Date", "الوقت / Time", "الموظف / Employee", "نوع الطلب / Order Type", "الاستلام / Pickup-Delivery", "الدفع / Payment", "المبلغ / Amount", "الهدية / Gift", "سعر الهدية / Gift Price", "العميل / Customer", "الجوال / Phone", "ملاحظات / Notes"];
   const rows = (data as unknown as Sale[]).map((s) => [
     localDate(s.created_at),
     localTime(s.created_at),
@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
     bi(FULFILLMENT[s.fulfillment]),
     bi(PAYMENT_METHODS[s.payment_method]),
     Number(s.amount).toFixed(2),
+    s.gift_name,
+    s.gift_name ? Number(s.gift_amount).toFixed(2) : "",
     s.customer_name,
     s.customer_phone,
     s.notes,

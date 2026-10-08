@@ -21,7 +21,7 @@ export default async function MonthlyReport({ searchParams }: { searchParams: Pr
   return (
     <>
       <Nav profile={profile} active="monthly" />
-      <main className="mx-auto max-w-5xl space-y-4 p-4">
+      <main className="mx-auto max-w-6xl space-y-4 p-3 sm:p-4">
         <Card>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h1 className="me-auto text-2xl font-semibold">

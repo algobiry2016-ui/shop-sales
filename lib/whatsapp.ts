@@ -4,6 +4,8 @@ import { localTime } from "./time";
 export type SaleMessage = {
   employee: string;
   amount: number;
+  gift_name?: string | null;
+  gift_amount?: number;
   order_type: OrderType;
   fulfillment: Fulfillment;
   payment_method: PaymentMethod;
@@ -21,6 +23,7 @@ export function formatSaleMessage(s: SaleMessage): string {
     `🎁 النوع / Type: ${ORDER_TYPES[s.order_type].ar} / ${ORDER_TYPES[s.order_type].en}`,
     `🚚 الاستلام / Pickup-Delivery: ${FULFILLMENT[s.fulfillment].ar} / ${FULFILLMENT[s.fulfillment].en}`,
   ];
+  if (s.gift_name) lines.push(`🎀 هدية / Gift: ${s.gift_name} (${(s.gift_amount ?? 0).toFixed(2)} SAR)`);
   if (s.customer_name) lines.push(`🙋 العميل / Customer: ${s.customer_name}`);
   if (s.notes) lines.push(`📝 ملاحظات / Notes: ${s.notes}`);
   lines.push(`🕒 ${localTime(s.created_at)}`);

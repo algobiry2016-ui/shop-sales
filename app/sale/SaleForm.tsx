@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Bi } from "@/components/ui";
-import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, T, type Bilingual, type Fulfillment, type OrderType, type PaymentMethod } from "@/lib/labels";
+import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, T, bi, type Bilingual, type Fulfillment, type OrderType, type PaymentMethod } from "@/lib/labels";
 
 function Choice<K extends string>({
   name,
@@ -45,6 +45,10 @@ export function SaleForm() {
   const [orderType, setOrderType] = useState<OrderType | "">("");
   const [fulfillment, setFulfillment] = useState<Fulfillment | "">("pickup");
   const [payment, setPayment] = useState<PaymentMethod | "">("");
+  const [withGift, setWithGift] = useState<"yes" | "no">("no");
+  const [amount, setAmount] = useState("");
+  const [giftAmount, setGiftAmount] = useState("");
+  const total = (Number(amount) || 0) + (withGift === "yes" ? Number(giftAmount) || 0 : 0);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState("");
 
@@ -61,7 +65,10 @@ export function SaleForm() {
         order_type: orderType,
         fulfillment,
         payment_method: payment,
-        amount: form.get("amount"),
+        amount,
+        with_gift: withGift === "yes",
+        gift_name: form.get("gift_name"),
+        gift_amount: giftAmount,
         customer_name: form.get("customer_name"),
         customer_phone: form.get("customer_phone"),
         notes: form.get("notes"),
@@ -76,6 +83,9 @@ export function SaleForm() {
     setOrderType("");
     setFulfillment("pickup");
     setPayment("");
+    setWithGift("no");
+    setAmount("");
+    setGiftAmount("");
     setStatus("saved");
     router.refresh();
     setTimeout(() => setStatus("idle"), 2500);
@@ -87,10 +97,44 @@ export function SaleForm() {
       <Choice name="fulfillment" title={T.fulfillment} options={FULFILLMENT} value={fulfillment} onChange={setFulfillment} />
       <Choice name="payment_method" title={T.paymentMethod} options={PAYMENT_METHODS} value={payment} onChange={setPayment} />
 
+      <Choice name="with_gift" title={T.withGift} options={{ no: T.no, yes: T.yes }} value={withGift} onChange={setWithGift} />
+
+      {withGift === "yes" && (
+        <div className="grid gap-3 rounded-md border border-line bg-paper p-3 sm:grid-cols-2">
+          <label className="block">
+            <Bi l={T.giftName} className="mb-1 text-sm font-medium" />
+            <input name="gift_name" required maxLength={100} className="w-full rounded-md border p-2" />
+          </label>
+          <label className="block">
+            <Bi l={T.giftAmount} className="mb-1 text-sm font-medium" />
+            <input value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} type="number" inputMode="decimal" min="0" step="0.01" required dir="ltr" className="w-full rounded-md border p-2" />
+          </label>
+        </div>
+      )}
+
       <label className="block">
-        <Bi l={T.amount} className="mb-1 font-semibold" />
-        <input name="amount" type="number" inputMode="decimal" min="0.01" step="0.01" required dir="ltr" className="w-full rounded-md border p-3 text-2xl font-semibold" />
+        <Bi l={withGift === "yes" ? T.flowersAmount : T.amount} className="mb-1 font-medium" />
+        <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          type="number"
+          inputMode="decimal"
+          min={withGift === "yes" ? "0" : "0.01"}
+          step="0.01"
+          required
+          dir="ltr"
+          className="w-full rounded-md border p-3 text-2xl font-semibold"
+        />
       </label>
+
+      {withGift === "yes" && (
+        <div className="flex items-center justify-between rounded-md bg-ink px-4 py-3 text-white">
+          <span>{bi(T.total)}</span>
+          <span className="text-xl font-semibold" dir="ltr">
+            {total.toFixed(2)} SAR
+          </span>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">

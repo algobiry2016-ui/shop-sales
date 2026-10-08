@@ -22,7 +22,7 @@ export default async function SalePage() {
   return (
     <>
       <Nav profile={profile} active="sale" />
-      <main className="mx-auto max-w-2xl space-y-4 p-4">
+      <main className="mx-auto max-w-2xl space-y-4 p-3 sm:p-4">
         <Card>
           <h1 className="mb-4 text-2xl font-semibold">
             <Bi l={T.newSale} display />
