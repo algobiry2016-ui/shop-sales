@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS } from "@/lib/labels";
 import { createClient, getProfile } from "@/lib/supabase/server";
-import { formatSaleMessage, notifyManagers } from "@/lib/whatsapp";
+import { formatSaleMessage, notifyManagers } from "@/lib/notify";
 
 const clean = (v: unknown, max: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
 
