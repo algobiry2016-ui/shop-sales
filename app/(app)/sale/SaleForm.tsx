@@ -46,12 +46,14 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
   const [orderType, setOrderType] = useState<OrderType | "">("");
   const [fulfillment, setFulfillment] = useState<Fulfillment | "">("pickup");
   const [payment, setPayment] = useState<PaymentMethod | "">("");
-  const [withGift, setWithGift] = useState<"yes" | "no">("no");
+  const [withGiftChoice, setWithGift] = useState<"yes" | "no">("no");
   const [amount, setAmount] = useState("");
   const [giftAmount, setGiftAmount] = useState("");
-  const total = (Number(amount) || 0) + (withGift === "yes" ? Number(giftAmount) || 0 : 0);
   const [saleDate, setSaleDate] = useState(today);
   const backdated = canBackdate && saleDate !== today;
+  // Past sales are entered quickly from old records: no gift question.
+  const withGift = backdated ? "no" : withGiftChoice;
+  const total = (Number(amount) || 0) + (withGift === "yes" ? Number(giftAmount) || 0 : 0);
   // "Not specified" is only for past sales whose details nobody remembers.
   const without = <K extends string>(o: Record<K, Bilingual>) =>
     (backdated ? o : Object.fromEntries(Object.entries(o).filter(([k]) => k !== "unknown"))) as Record<K, Bilingual>;
@@ -87,8 +89,9 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
       return;
     }
     formEl.reset();
-    setOrderType("");
-    setFulfillment("pickup");
+    // Past sales keep "Not specified" so the next one on the same day needs only payment and amount.
+    setOrderType(backdated ? "unknown" : "");
+    setFulfillment(backdated ? "unknown" : "pickup");
     setPayment("");
     setWithGift("no");
     setAmount("");
@@ -109,8 +112,13 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
             max={today}
             required
             onChange={(e) => {
+              const past = e.target.value !== today;
               setSaleDate(e.target.value);
-              if (e.target.value === today) {
+              // A past date starts on "Not specified"; back to today, it returns to the normal start.
+              if (past && !backdated) {
+                setOrderType("unknown");
+                setFulfillment("unknown");
+              } else if (!past) {
                 if (orderType === "unknown") setOrderType("");
                 if (fulfillment === "unknown") setFulfillment("pickup");
               }
@@ -125,7 +133,7 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
       <Choice name="fulfillment" title={T.fulfillment} options={without(FULFILLMENT)} value={fulfillment} onChange={setFulfillment} />
       <Choice name="payment_method" title={T.paymentMethod} options={PAYMENT_METHODS} value={payment} onChange={setPayment} />
 
-      <Choice name="with_gift" title={T.withGift} options={{ no: T.no, yes: T.yes }} value={withGift} onChange={setWithGift} />
+      {!backdated && <Choice name="with_gift" title={T.withGift} options={{ no: T.no, yes: T.yes }} value={withGift} onChange={setWithGift} />}
 
       {withGift === "yes" && (
         <div className="grid gap-3 rounded-md border border-line bg-paper p-3 sm:grid-cols-2">
