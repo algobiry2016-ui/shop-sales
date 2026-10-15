@@ -121,10 +121,26 @@ export function parseSallaOrder(order: Json) {
     })),
     total: Number(obj(obj(order.amounts).total).amount) || null,
     salla_status: str(obj(order.status).slug) ?? str(obj(order.status).name),
-    /** A future delivery date waits as "scheduled" until its morning. */
-    status: date && date > localDate() ? ("scheduled" as const) : ("new" as const),
+    /** A future order waits as "scheduled" until the florists' shift that prepares it. */
+    status: date && releaseDate(date, deliverySlot(opts)) > localDate() ? ("scheduled" as const) : ("new" as const),
     raw: order,
   };
+}
+
+/** One day before a YYYY-MM-DD date. */
+function dayBefore(date: string): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The day an order goes to the website manager, at the florists' 1 PM shift. Morning
+ * orders (9–12) are prepared the night before and kept in the fridge, so they go out the
+ * day before; so do orders without a known slot, to be safe. The rest go out on the day.
+ */
+export function releaseDate(deliveryDate: string, slot: string | null): string {
+  return slot === "afternoon" || slot === "evening" ? deliveryDate : dayBefore(deliveryDate);
 }
 
 export const isSallaCanceled = (slug: string | null) => !!slug && /cancel|ملغ/i.test(slug);
