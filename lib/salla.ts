@@ -23,24 +23,31 @@ export function saudiMobile(v: unknown): string | null {
 
 export type Branch = "riyadh" | "khamis";
 
-// The store's two branches in Salla (Settings → Branches). Each order carries the branch
-// it is fulfilled from in `order_branches`, which is what splits the orders between the
-// Riyadh and Khamis Mushait teams. Customer cities are unreliable for this: the sender
-// often lives elsewhere (Jeddah, Tanomah…) and Salla's city is the customer's, not the
-// recipient's.
+// What splits the orders between the Riyadh and Khamis Mushait teams is the order's
+// scope (نطاق): the region the customer shops in on the storefront, the same thing the
+// new Salla dashboard filters by. Products are shared between scopes. The fulfilling
+// branch (order_branches) is a fallback: Khamis is Salla's default branch, so it may
+// show up on Riyadh orders too. Customer cities are unreliable: the sender often lives
+// elsewhere (Jeddah, Tanomah…).
+const SALLA_SCOPES: Record<string, Branch> = {
+  "563565394": "khamis", // ابها وخميس مشيط
+  "1861517484": "riyadh", // الرياض
+};
 const SALLA_BRANCHES: Record<string, Branch> = {
-  "154195627": "khamis", // خميس مشيط (default; scope "ابها وخميس مشيط")
+  "154195627": "khamis", // خميس مشيط (default)
   "647258579": "riyadh", // الرياض
 };
 
 function branchOfOrder(order: Record<string, unknown>): Branch | null {
+  const scope = order.scope as { id?: unknown; name?: unknown } | null;
+  const byScope = SALLA_SCOPES[String(scope?.id)] ?? (typeof scope?.name === "string" ? branchOfCity(scope.name) : null);
+  if (byScope) return byScope;
   const branches = Array.isArray(order.order_branches) ? order.order_branches : [];
   for (const b of branches) {
     const branch = SALLA_BRANCHES[String((b as { id?: unknown })?.id)];
     if (branch) return branch;
   }
-  const scope = (order.scope as { name?: unknown } | null)?.name;
-  return typeof scope === "string" ? branchOfCity(scope) : null;
+  return null;
 }
 
 // Fallback only, when an order has no branch: names that point to a branch. Anything
