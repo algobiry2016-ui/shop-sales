@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS } from "@/lib/labels";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import { isDate, localDate } from "@/lib/time";
@@ -71,8 +71,9 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  // Past sales entered by a manager don't trigger a Telegram alert.
-  if (!backdated) await notifyManagers(formatSaleMessage({ ...sale, amount: Number(sale.amount), gift_amount: Number(sale.gift_amount), employee: profile.full_name }));
+  // Past sales entered by a manager don't trigger a Telegram alert. The alert is sent
+  // after the response, so the coordinator doesn't wait on Telegram to see "Saved".
+  if (!backdated) after(() => notifyManagers(formatSaleMessage({ ...sale, amount: Number(sale.amount), gift_amount: Number(sale.gift_amount), employee: profile.full_name })));
 
   return NextResponse.json({ sale });
 }
