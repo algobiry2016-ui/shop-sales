@@ -79,7 +79,7 @@ create table if not exists public.shop_orders (
   address text,
   card_message text,
   anonymous boolean not null default false,   -- "هدية من مجهول": hide the sender from the rep
-  attachments jsonb not null default '[]',    -- customer's QR link / photo for the florist
+  attachments jsonb not null default '[]',    -- customer's QR link / photo, shown at every step
   items jsonb not null default '[]',          -- [{ name, quantity, image, options }]
   total numeric(10, 2),
   salla_status text,
@@ -104,7 +104,8 @@ create table if not exists public.shop_order_events (
   actor_id uuid references public.shop_staff (id), -- null = system / Salla
   from_status text,
   to_status text not null,
-  note text
+  note text,
+  checks jsonb -- handover checklist confirmed at this step, e.g. {"card": true, "qr": true, "photo": true}
 );
 
 create index if not exists shop_order_events_order_idx on public.shop_order_events (order_id);
@@ -141,7 +142,8 @@ create policy "shop_orders: read by branch or assignee" on public.shop_orders
     public.shop_is_admin()
     or (public.shop_my_role() in ('site_manager', 'supervisor') and branch = public.shop_my_branch())
     or florist_id = auth.uid()
-    or rep_id = auth.uid()
+    -- Reps read their orders through the app's server, which hides the sender of an
+    -- anonymous gift ("هدية من مجهول"), so they get no direct read here.
   );
 
 drop policy if exists "shop_order_events: read with order" on public.shop_order_events;
