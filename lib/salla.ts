@@ -23,8 +23,28 @@ export function saudiMobile(v: unknown): string | null {
 
 export type Branch = "riyadh" | "khamis";
 
-// Cities of each branch as Salla writes them. Unknown cities stay without a branch and
-// show up for the managers to place by hand. Add names here as real orders come in.
+// The store's two branches in Salla (Settings → Branches). Each order carries the branch
+// it is fulfilled from in `order_branches`, which is what splits the orders between the
+// Riyadh and Khamis Mushait teams. Customer cities are unreliable for this: the sender
+// often lives elsewhere (Jeddah, Tanomah…) and Salla's city is the customer's, not the
+// recipient's.
+const SALLA_BRANCHES: Record<string, Branch> = {
+  "154195627": "khamis", // خميس مشيط (default; scope "ابها وخميس مشيط")
+  "647258579": "riyadh", // الرياض
+};
+
+function branchOfOrder(order: Record<string, unknown>): Branch | null {
+  const branches = Array.isArray(order.order_branches) ? order.order_branches : [];
+  for (const b of branches) {
+    const branch = SALLA_BRANCHES[String((b as { id?: unknown })?.id)];
+    if (branch) return branch;
+  }
+  const scope = (order.scope as { name?: unknown } | null)?.name;
+  return typeof scope === "string" ? branchOfCity(scope) : null;
+}
+
+// Fallback only, when an order has no branch: names that point to a branch. Anything
+// else stays without a branch and shows up for the managers to place by hand.
 const BRANCH_CITIES: Record<Branch, string[]> = {
   riyadh: ["الرياض", "riyadh"],
   khamis: ["خميس مشيط", "khamis mushait", "khamis mushayt", "أبها", "ابها", "abha", "أحد رفيدة", "احد رفيدة", "ahad rafidah", "تندحة", "tendaha"],
@@ -104,7 +124,7 @@ export function parseSallaOrder(order: Json) {
   return {
     salla_id: Number(order.id),
     reference: str(order.reference_id),
-    branch: branchOfCity(city),
+    branch: branchOfOrder(order) ?? branchOfCity(city),
     delivery_date: date,
     delivery_slot: deliverySlot(opts),
     customer_name: [str(customer.first_name), str(customer.last_name)].filter(Boolean).join(" ") || str(customer.name),
