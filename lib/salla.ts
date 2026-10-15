@@ -119,7 +119,13 @@ export function parseSallaOrder(order: Json) {
   const opts = options(order);
   const city = str(address.city) ?? str(customer.city);
   const date = deliveryDate(opts, order);
-  const card = opts.find((o) => /بطاقة|إهداء|اهداء|عبارة|رسالة|card|message/i.test(o.name));
+  // Option names as the store writes them on each product (Salla product options):
+  // رسالتك للمستلم، رقم المستلم، اكتب اسم الحي (عنوان المستلم)، هدية من مجهول،
+  // معك باركود QR ؟، عندك صورة…؟
+  const opt = (re: RegExp) => opts.find((o) => re.test(o.name))?.value ?? null;
+  const card = opt(/رسالت|رسالة|إهداء|اهداء|بطاقة|كرت|card|message/i);
+  const recipientPhone = opt(/رقم المستلم|جوال المستلم|recipient/i);
+  const district = opt(/عنوان|الحي|address/i);
 
   return {
     salla_id: Number(order.id),
@@ -130,14 +136,18 @@ export function parseSallaOrder(order: Json) {
     customer_name: [str(customer.first_name), str(customer.last_name)].filter(Boolean).join(" ") || str(customer.name),
     customer_phone: saudiMobile(`${str(customer.mobile_code) ?? ""}${str(customer.mobile) ?? ""}`) ?? saudiMobile(customer.mobile),
     recipient_name: str(receiver.name),
-    recipient_phone: saudiMobile(receiver.phone ?? receiver.mobile),
+    recipient_phone: saudiMobile(recipientPhone) ?? saudiMobile(receiver.phone ?? receiver.mobile),
     city,
-    address: str(address.shipping_address) ?? str(address.street_address) ?? str(address.address),
-    card_message: card?.value ?? null,
+    address: district ?? str(address.shipping_address) ?? str(address.street_address) ?? str(address.address),
+    card_message: card,
+    /** "هدية من مجهول": the sender's details must not reach the recipient or the rep. */
+    anonymous: !!opt(/مجهول|anonymous/i),
+    /** Customer's QR link and uploaded photo, for the florist. */
+    attachments: opts.filter((o) => /باركود|QR|صورة|image/i.test(o.name)).map((o) => ({ name: o.name, value: o.value })),
     items: (Array.isArray(order.items) ? order.items : []).map((i) => ({
       name: str(obj(i).name),
       quantity: Number(obj(i).quantity) || 1,
-      image: str(obj(obj(i).product).thumbnail) ?? str(obj(obj(i).product).image),
+      image: str(obj(i).thumbnail) ?? str(obj(i).product_thumbnail) ?? str(obj(obj(i).product).thumbnail),
     })),
     total: Number(obj(obj(order.amounts).total).amount) || null,
     salla_status: str(obj(order.status).slug) ?? str(obj(order.status).name),

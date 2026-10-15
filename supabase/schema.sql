@@ -119,6 +119,8 @@ create table if not exists public.shop_orders (
   city text,
   address text,
   card_message text,
+  anonymous boolean not null default false,   -- "هدية من مجهول": hide the sender from the rep
+  attachments jsonb not null default '[]',    -- customer's QR link / photo for the florist
   items jsonb not null default '[]',          -- [{ name, quantity, image, options }]
   total numeric(10, 2),
   salla_status text,
