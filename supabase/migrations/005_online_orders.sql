@@ -66,7 +66,7 @@ create table if not exists public.shop_orders (
   reference text,                             -- order number the customer sees
   branch text check (branch in ('riyadh', 'khamis')), -- null until known → shown to managers
   status text not null default 'new' check (status in (
-    'scheduled', 'new', 'with_florist', 'ready', 'with_rep', 'with_barq',
+    'scheduled', 'new', 'with_florist', 'ready', 'awaiting_pickup', 'with_rep', 'with_barq',
     'out_for_delivery', 'delivered', 'canceled'
   )),
   delivery_date date,                         -- Riyadh date the customer picked
