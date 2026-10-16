@@ -104,7 +104,7 @@ function deliverySlot(opts: { name: string; value: string }[]): "morning" | "aft
   for (const o of opts.filter((o) => /فترة|وقت|time|slot|period/i.test(o.name))) {
     const v = o.value.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
     const nums = (v.match(/\d{1,2}/g) ?? []).map(Number);
-    if (nums.includes(9) && nums.includes(12)) return "morning";
+    if ((nums.includes(8) || nums.includes(9)) && nums.includes(12)) return "morning";
     if (nums.includes(2) && nums.includes(7)) return "afternoon";
     if (nums.includes(7) && nums.includes(11)) return "evening";
     if (/صباح|morning/i.test(v)) return "morning";
@@ -133,6 +133,10 @@ export function parseSallaOrder(order: Json) {
   const card = opt(/رسالت|رسالة|إهداء|اهداء|بطاقة|كرت|card|message/i);
   const recipientPhone = opt(/رقم المستلم|جوال المستلم|recipient/i);
   const district = opt(/عنوان|الحي|address/i);
+  // "اختر موقع التوصيل أو استلام من المتجر": خميس مشيط / أبها / … / استلام من المتجر.
+  const area = opt(/موقع التوصيل|منطقة التوصيل|مدينة التوصيل|location/i);
+  const pickup = !!area && /استلام/.test(area);
+  const senderPhone = opt(/رقم المرسل|جوال المرسل|sender/i);
 
   return {
     salla_id: Number(order.id),
@@ -141,11 +145,15 @@ export function parseSallaOrder(order: Json) {
     delivery_date: date,
     delivery_slot: deliverySlot(opts),
     customer_name: [str(customer.first_name), str(customer.last_name)].filter(Boolean).join(" ") || str(customer.name),
-    customer_phone: saudiMobile(`${str(customer.mobile_code) ?? ""}${str(customer.mobile) ?? ""}`) ?? saudiMobile(customer.mobile),
+    customer_phone: saudiMobile(senderPhone) ?? saudiMobile(`${str(customer.mobile_code) ?? ""}${str(customer.mobile) ?? ""}`) ?? saudiMobile(customer.mobile),
     recipient_name: str(receiver.name),
     recipient_phone: saudiMobile(recipientPhone) ?? saudiMobile(receiver.phone ?? receiver.mobile),
     city,
-    address: district ?? str(address.shipping_address) ?? str(address.street_address) ?? str(address.address),
+    /** Delivery area the customer picked (Khamis products), or null. */
+    delivery_area: area,
+    /** "استلام من المتجر": no rep, the supervisor hands it over at the shop. */
+    pickup,
+    address: district ?? area ?? str(address.shipping_address) ?? str(address.street_address) ?? str(address.address),
     card_message: card,
     /** "هدية من مجهول": the sender's details must not reach the recipient or the rep. */
     anonymous: !!opt(/مجهول|anonymous/i),
@@ -187,7 +195,8 @@ function deliveryFee(order: Json): number | null {
     for (const o of (obj(item).options as unknown[]) ?? [])
       for (const v of Array.isArray(obj(o).value) ? (obj(o).value as unknown[]) : [obj(o).value])
         add(obj(o).name, obj(v).price);
-  const fee = priced.find((o) => /توصيل|منطقة|مدينة|المنطقة|delivery|area|city/i.test(o.name) && !/فترة|تاريخ/.test(o.name));
+  // "اختر موقع التوصيل أو استلام من المتجر": خميس مشيط 25، الفرعاء 50، استلام 0…
+  const fee = priced.find((o) => /موقع التوصيل|منطقة|مدينة|delivery|area|city|location/i.test(o.name) && !/فترة|تاريخ/.test(o.name));
   return fee ? fee.price : null;
 }
 

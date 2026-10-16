@@ -117,6 +117,8 @@ create table if not exists public.shop_orders (
   recipient_name text,
   recipient_phone text,                       -- 05XXXXXXXX when valid
   city text,
+  delivery_area text,                         -- area option: خميس مشيط، أبها، الفرعاء… (Khamis products)
+  pickup boolean not null default false,      -- "استلام من المتجر": no rep needed
   address text,
   card_message text,
   anonymous boolean not null default false,   -- "هدية من مجهول": hide the sender from the rep
