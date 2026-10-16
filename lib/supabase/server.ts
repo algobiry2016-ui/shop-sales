@@ -32,8 +32,10 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   const { data: auth } = await supabase.auth.getClaims();
   const userId = auth?.claims?.sub;
   if (!userId) return null;
-  const { data } = await supabase.from("shop_staff").select("id, full_name, role, branch").eq("id", userId).maybeSingle();
-  return data as Profile | null;
+  const { data } = await supabase.from("shop_staff").select("id, full_name, role, branch, active").eq("id", userId).maybeSingle();
+  // A stopped staff member has no access, even with a valid session.
+  if (!data?.active) return null;
+  return { id: data.id, full_name: data.full_name, role: data.role, branch: data.branch } as Profile;
 });
 
 export async function requireProfile(): Promise<Profile> {

@@ -1,6 +1,6 @@
 import { T } from "@/lib/labels";
 import { OL } from "@/lib/orders";
-import { recordsSales, type Profile } from "@/lib/roles";
+import { SL, recordsSales, type Profile } from "@/lib/roles";
 import { Bi } from "./bi";
 import { NavLinks } from "./client";
 
@@ -18,6 +18,7 @@ export function Nav({ profile }: { profile: Profile }) {
       ? [
           { href: "/reports/daily", label: T.dailyReport },
           { href: "/reports/monthly", label: T.monthlyReport },
+          { href: "/staff", label: SL.staff },
         ]
       : []),
   ];
