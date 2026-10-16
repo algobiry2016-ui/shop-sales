@@ -157,11 +157,38 @@ export function parseSallaOrder(order: Json) {
       image: str(obj(i).thumbnail) ?? str(obj(i).product_thumbnail) ?? str(obj(obj(i).product).thumbnail),
     })),
     total: Number(obj(obj(order.amounts).total).amount) || null,
+    payment_method: str(order.payment_method),
+    /** The delivery-area option the customer picked (e.g. "خميس مشيط 25"), priced in the order. */
+    delivery_fee: deliveryFee(order),
     salla_status: str(obj(order.status).slug) ?? str(obj(order.status).name),
     /** A future order waits as "scheduled" until the florists' shift that prepares it. */
     status: date && releaseDate(date, deliverySlot(opts)) > localDate() ? ("scheduled" as const) : ("new" as const),
     raw: order,
   };
+}
+
+/**
+ * Delivery charge inside the order. The store prices delivery as an option the customer
+ * picks (delivery area / city), so it is the price of an option whose name mentions
+ * delivery or the area; shipping_cost is used when Salla carries one.
+ */
+function deliveryFee(order: Json): number | null {
+  const shipping = Number(obj(obj(order.amounts).shipping_cost).amount);
+  if (shipping > 0) return shipping;
+  const priced: { name: string; price: number }[] = [];
+  const add = (name: unknown, price: unknown) => {
+    const n = str(name);
+    const p = Number(obj(price).amount ?? price);
+    if (n && Number.isFinite(p)) priced.push({ name: n, price: p });
+  };
+  // Order-level options (Salla lists them as "order_option" products) and item options.
+  for (const o of Array.isArray(order.options) ? order.options : []) add(obj(o).name, obj(obj(obj(o).amounts).total).amount);
+  for (const item of Array.isArray(order.items) ? order.items : [])
+    for (const o of (obj(item).options as unknown[]) ?? [])
+      for (const v of Array.isArray(obj(o).value) ? (obj(o).value as unknown[]) : [obj(o).value])
+        add(obj(o).name, obj(v).price);
+  const fee = priced.find((o) => /توصيل|منطقة|مدينة|المنطقة|delivery|area|city/i.test(o.name) && !/فترة|تاريخ/.test(o.name));
+  return fee ? fee.price : null;
 }
 
 /** One day before a YYYY-MM-DD date. */

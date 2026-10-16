@@ -122,7 +122,9 @@ create table if not exists public.shop_orders (
   anonymous boolean not null default false,   -- "هدية من مجهول": hide the sender from the rep
   attachments jsonb not null default '[]',    -- customer's QR link / photo, shown at every step
   items jsonb not null default '[]',          -- [{ name, quantity, image, options }]
-  total numeric(10, 2),
+  total numeric(10, 2),                       -- what the customer paid
+  payment_method text,                        -- Salla's code: mada, credit_card, tabby_installment, tamara_installment…
+  delivery_fee numeric(10, 2),                -- delivery charge inside the order (the delivery-area option)
   salla_status text,
   florist_id uuid references public.shop_staff (id),
   rep_id uuid references public.shop_staff (id),
@@ -151,6 +153,23 @@ create table if not exists public.shop_order_events (
 
 create index if not exists shop_order_events_order_idx on public.shop_order_events (order_id);
 
+-- Payment fees per method, entered by the managers, for the estimated net per order.
+-- Estimates: the real settlement may differ (fixed fees, VAT on fees).
+create table if not exists public.shop_payment_fees (
+  method text primary key,                    -- Salla's payment_method code
+  label text not null,
+  percent numeric(5, 2) not null default 0 check (percent >= 0 and percent < 100),
+  fixed numeric(10, 2) not null default 0 check (fixed >= 0), -- SAR per transaction
+  updated_at timestamptz not null default now()
+);
+
+insert into public.shop_payment_fees (method, label) values
+  ('mada', 'مدى / Mada'),
+  ('credit_card', 'بطاقة ائتمانية / Credit Card'),
+  ('tabby_installment', 'تابي / Tabby'),
+  ('tamara_installment', 'تمارا / Tamara')
+on conflict (method) do nothing;
+
 -- Everything Salla sends, kept as-is for checking and replaying.
 create table if not exists public.shop_salla_webhooks (
   id bigint generated always as identity primary key,
@@ -175,6 +194,7 @@ alter table public.shop_orders enable row level security;
 alter table public.shop_order_events enable row level security;
 alter table public.shop_salla_webhooks enable row level security;
 alter table public.shop_salla_auth enable row level security;
+alter table public.shop_payment_fees enable row level security;
 
 drop policy if exists "shop_orders: read by branch or assignee" on public.shop_orders;
 create policy "shop_orders: read by branch or assignee" on public.shop_orders
@@ -191,6 +211,11 @@ drop policy if exists "shop_order_events: read with order" on public.shop_order_
 create policy "shop_order_events: read with order" on public.shop_order_events
   for select to authenticated
   using (exists (select 1 from public.shop_orders o where o.id = order_id)); -- order policy applies
+
+drop policy if exists "shop_payment_fees: admin read" on public.shop_payment_fees;
+create policy "shop_payment_fees: admin read" on public.shop_payment_fees
+  for select to authenticated
+  using (public.shop_is_admin());
 
 drop policy if exists "shop_salla_webhooks: admin read" on public.shop_salla_webhooks;
 create policy "shop_salla_webhooks: admin read" on public.shop_salla_webhooks
