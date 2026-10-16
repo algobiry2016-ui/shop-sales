@@ -2,12 +2,14 @@ import { SalesTable, TotalsRow } from "@/components/reports";
 import { Bi, Card } from "@/components/ui";
 import { T } from "@/lib/labels";
 import { SALE_COLUMNS, summarize, type Sale } from "@/lib/report";
-import { createClient, requireProfile } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { createClient, homeOf, recordsSales, requireProfile } from "@/lib/supabase/server";
 import { dayRange, localDate } from "@/lib/time";
 import { SaleForm } from "./SaleForm";
 
 export default async function SalePage() {
   const profile = await requireProfile();
+  if (!recordsSales(profile)) redirect(homeOf(profile));
   const supabase = await createClient();
   const [start, end] = dayRange(localDate());
   const { data } = await supabase

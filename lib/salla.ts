@@ -217,3 +217,65 @@ export function releaseDate(deliveryDate: string, slot: string | null): string {
 }
 
 export const isSallaCanceled = (slug: string | null) => !!slug && /cancel|ملغ/i.test(slug);
+
+// ─── Order status in Salla ─────────────────────────────────────────────────
+// Only the two statuses the store uses (their customer messages are free):
+// in_progress when a florist takes the order, shipped when it is handed over.
+export const SALLA_STATUS = { in_progress: 770191877, shipped: 1193467138 } as const;
+
+const SALLA_API = "https://api.salla.dev/admin/v2";
+
+type SallaDb = {
+  from: (t: "shop_salla_auth") => {
+    select: (c: string) => { limit: (n: number) => { maybeSingle: () => PromiseLike<{ data: { merchant_id: number; access_token: string; refresh_token: string | null; expires_at: string | null } | null }> } };
+    update: (v: Record<string, unknown>) => { eq: (c: string, v: unknown) => PromiseLike<unknown> };
+  };
+};
+
+/** The store's access token, refreshed when it is about to expire (needs SALLA_CLIENT_ID / SALLA_CLIENT_SECRET). */
+async function sallaToken(db: SallaDb): Promise<string | null> {
+  const { data } = await db.from("shop_salla_auth").select("merchant_id, access_token, refresh_token, expires_at").limit(1).maybeSingle();
+  if (!data) return null;
+  const soon = data.expires_at && new Date(data.expires_at).getTime() < Date.now() + 24 * 60 * 60 * 1000;
+  const id = process.env.SALLA_CLIENT_ID;
+  const secret = process.env.SALLA_CLIENT_SECRET;
+  if (!soon || !data.refresh_token || !id || !secret) return data.access_token;
+  const res = await fetch("https://accounts.salla.sa/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: data.refresh_token, client_id: id, client_secret: secret }),
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null);
+  const t = res?.ok ? await res.json().catch(() => null) : null;
+  if (!t?.access_token) return data.access_token;
+  await db
+    .from("shop_salla_auth")
+    .update({
+      access_token: t.access_token,
+      refresh_token: t.refresh_token ?? data.refresh_token,
+      expires_at: t.expires_in ? new Date(Date.now() + t.expires_in * 1000).toISOString() : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("merchant_id", data.merchant_id);
+  return t.access_token;
+}
+
+/**
+ * Moves the order in Salla (the customer gets that status's message). Never throws: the
+ * cycle in this system goes on even if Salla is unreachable; the error is returned.
+ */
+export async function setSallaStatus(db: unknown, sallaId: number, statusId: number): Promise<string | null> {
+  try {
+    const token = await sallaToken(db as SallaDb);
+    if (!token) return "Salla not connected";
+    const res = await fetch(`${SALLA_API}/orders/${sallaId}/status`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ status_id: statusId }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    return res.ok ? null : `Salla ${res.status}: ${(await res.text()).slice(0, 200)}`;
+  } catch (err) {
+    return err instanceof Error ? err.message : "Salla error";
+  }
+}

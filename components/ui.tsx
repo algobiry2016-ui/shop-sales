@@ -1,5 +1,6 @@
 import { T } from "@/lib/labels";
-import type { Profile } from "@/lib/supabase/server";
+import { OL } from "@/lib/orders";
+import { recordsSales, type Profile } from "@/lib/roles";
 import { Bi } from "./bi";
 import { NavLinks } from "./client";
 
@@ -11,7 +12,8 @@ export function Card({ children, className = "" }: { children: React.ReactNode; 
 
 export function Nav({ profile }: { profile: Profile }) {
   const links = [
-    { href: "/sale", label: T.newSale },
+    ...(recordsSales(profile) ? [{ href: "/sale", label: T.newSale }] : []),
+    ...(profile.role !== "employee" ? [{ href: "/orders", label: OL.orders }] : []),
     ...(profile.role === "admin"
       ? [
           { href: "/reports/daily", label: T.dailyReport },

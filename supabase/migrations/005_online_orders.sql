@@ -131,6 +131,10 @@ insert into public.shop_payment_fees (method, label) values
   ('tamara_installment', 'تمارا / Tamara')
 on conflict (method) do nothing;
 
+-- Photos of finished orders (private; the app shows them through short-lived links).
+insert into storage.buckets (id, name, public) values ('shop-orders', 'shop-orders', false)
+on conflict (id) do nothing;
+
 -- Everything Salla sends, kept as-is for checking and replaying.
 create table if not exists public.shop_salla_webhooks (
   id bigint generated always as identity primary key,
