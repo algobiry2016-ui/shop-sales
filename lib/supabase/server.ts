@@ -19,9 +19,7 @@ export async function createClient() {
   });
 }
 
-import { homeOf, type Profile } from "../roles";
-
-export { homeOf, recordsSales, type Profile, type Role } from "../roles";
+export type Profile = { id: string; full_name: string; role: "employee" | "admin" };
 
 /**
  * The signed-in person's staff record, or null if they are not signed in or not on
@@ -32,10 +30,8 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   const { data: auth } = await supabase.auth.getClaims();
   const userId = auth?.claims?.sub;
   if (!userId) return null;
-  const { data } = await supabase.from("shop_staff").select("id, full_name, role, branch, active").eq("id", userId).maybeSingle();
-  // A stopped staff member has no access, even with a valid session.
-  if (!data?.active) return null;
-  return { id: data.id, full_name: data.full_name, role: data.role, branch: data.branch } as Profile;
+  const { data } = await supabase.from("shop_staff").select("id, full_name, role").eq("id", userId).maybeSingle();
+  return data as Profile | null;
 });
 
 export async function requireProfile(): Promise<Profile> {
@@ -46,6 +42,6 @@ export async function requireProfile(): Promise<Profile> {
 
 export async function requireAdmin(): Promise<Profile> {
   const profile = await requireProfile();
-  if (profile.role !== "admin") redirect(homeOf(profile));
+  if (profile.role !== "admin") redirect("/sale");
   return profile;
 }

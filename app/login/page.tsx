@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bi, SPACES } from "@/components/ui";
+import { Bi } from "@/components/ui";
 import { T } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,24 +19,14 @@ function toLoginEmail(input: string): string {
   return `${digits}@shop.com`;
 }
 
-/** Where to go after login: a local path from ?next=, else home. */
-function next(): string {
-  if (typeof window === "undefined") return "/";
-  const n = new URLSearchParams(window.location.search).get("next") ?? "/";
-  return n.startsWith("/") && !n.startsWith("//") ? n : "/";
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Staff (Riyadh, Sajeeb) use their mobile number; managers use their email.
   const [mode, setMode] = useState<"staff" | "manager">("staff");
-  // Opened from the orders app: show its name instead of the shop sales one.
-  const [ordersApp, setOrdersApp] = useState(false);
 
   useEffect(() => {
-    setOrdersApp(/^\/(orders|staff)/.test(next()));
     try {
       if (localStorage.getItem("loginMode") === "manager") setMode("manager");
     } catch {}
@@ -64,7 +54,7 @@ export default function LoginPage() {
       setError(mode === "staff" ? "رقم الجوال أو كلمة المرور غير صحيحة / Wrong mobile number or password" : "الإيميل أو كلمة المرور غير صحيحة / Wrong email or password");
       return;
     }
-    router.replace(next());
+    router.replace("/");
     router.refresh();
   }
 
@@ -74,7 +64,7 @@ export default function LoginPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Logo" className="mx-auto h-24 w-auto" />
         <h1 className="border-b border-line pb-5 text-center text-lg font-medium">
-          <Bi l={ordersApp ? SPACES.orders : SPACES.sales} display />
+          <Bi l={T.appName} display />
         </h1>
         <div className="grid grid-cols-2 gap-1 rounded-md border border-line p-1 text-sm">
           {(["staff", "manager"] as const).map((m) => (

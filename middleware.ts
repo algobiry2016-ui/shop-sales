@@ -24,8 +24,6 @@ export async function middleware(request: NextRequest) {
   if (!user && path !== "/login" && !path.startsWith("/api/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    // Back to where they were going after login (e.g. the orders app's start page).
-    url.search = path === "/" ? "" : `?next=${encodeURIComponent(path)}`;
     return NextResponse.redirect(url);
   }
 
@@ -33,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.webmanifest$|.*\\.png$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.png$).*)"],
 };

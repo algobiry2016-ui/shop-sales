@@ -92,23 +92,6 @@ export async function notifyManagers(text: string): Promise<void> {
   );
 }
 
-/** A personal alert to one staff member (their telegram_chat_id). Never throws. */
-export async function notifyChat(chatId: string | null | undefined, text: string): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token || !chatId) return;
-  try {
-    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!res.ok) console.error(`Telegram to ${chatId} failed: ${res.status} ${await res.text()}`);
-  } catch (err) {
-    console.error(`Telegram to ${chatId} failed:`, err);
-  }
-}
-
 /** Chats the bot has seen recently (a group it was added to, or a person who messaged it). */
 export async function recentTelegramChats(): Promise<{ id: number; name: string; type: string }[]> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
