@@ -7,6 +7,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const { id } = await params;
   const supabase = await createClient();
+  // A delivery already with the supervisor: cancel its order there first, so no rep goes out for a deleted sale.
+  const { data: sale } = await supabase.from("shop_sales").select("ord_order_id").eq("id", Number(id)).maybeSingle();
+  if (sale?.ord_order_id) return NextResponse.json({ error: "هذي العملية لها طلب توصيل عند المشرف: ألغه من برنامج الطلبات أول / Cancel its delivery order first" }, { status: 400 });
   const { error } = await supabase.from("shop_sales").delete().eq("id", Number(id));
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 

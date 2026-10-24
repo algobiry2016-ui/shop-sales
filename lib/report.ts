@@ -1,4 +1,4 @@
-import type { Fulfillment, OrderType, PaymentMethod } from "./labels";
+import type { Delivery, Fulfillment, OrderType, PaymentMethod } from "./labels";
 import { localDate } from "./time";
 
 export type Sale = {
@@ -15,11 +15,15 @@ export type Sale = {
   customer_name: string | null;
   customer_phone: string | null;
   notes: string | null;
+  /** A delivery sale (007): where and when, its fee (part of amount), and its order in the orders system once sent. */
+  delivery: Delivery | null;
+  delivery_fee: number;
+  ord_order_id: number | null;
   staff: { full_name: string } | null;
 };
 
 export const SALE_COLUMNS =
-  "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, gift_name, gift_amount, customer_name, customer_phone, notes, staff:shop_staff(full_name)";
+  "id, created_at, employee_id, order_type, fulfillment, payment_method, amount, gift_name, gift_amount, customer_name, customer_phone, notes, delivery, delivery_fee, ord_order_id, staff:shop_staff(full_name)";
 
 export type Totals = { total: number; cash: number; card: number; count: number; gifts: number; giftCount: number };
 

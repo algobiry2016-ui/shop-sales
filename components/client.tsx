@@ -34,13 +34,32 @@ export function DeleteSaleButton({ id }: { id: number }) {
   async function onClick() {
     if (!confirm(bi(T.confirmDelete))) return;
     setBusy(true);
-    await fetch(`/api/sales/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/sales/${id}`, { method: "DELETE" });
     setBusy(false);
+    if (!res.ok) alert((await res.json().catch(() => null))?.error ?? "Error");
     router.refresh();
   }
   return (
     <button onClick={onClick} disabled={busy} className="no-print rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50">
       <Bi l={T.delete} />
+    </button>
+  );
+}
+
+/** A delivery sale that didn't reach the supervisor: send it again. */
+export function ResendDelivery({ id }: { id: number }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  async function onClick() {
+    setBusy(true);
+    const res = await fetch(`/api/sales/${id}/delivery`, { method: "POST" });
+    setBusy(false);
+    if (!res.ok) alert((await res.json().catch(() => null))?.error ?? "Error");
+    router.refresh();
+  }
+  return (
+    <button onClick={onClick} disabled={busy} className="no-print rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50">
+      <Bi l={T.resend} />
     </button>
   );
 }

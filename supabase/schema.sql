@@ -37,7 +37,12 @@ create table if not exists public.shop_sales (
   gift_amount numeric(10, 2) not null default 0 check (gift_amount >= 0),
   customer_name text,
   customer_phone text, -- stored as 05XXXXXXXX when valid; links shop orders to the delivery system
-  notes text
+  notes text,
+  -- 007: a delivery sale's details for the orders system (website-orders), its delivery fee
+  -- (part of amount), and its order there once it reached the supervisor.
+  delivery jsonb, -- { area, date, slot, card_message, recipient_phone }
+  delivery_fee numeric(10, 2) not null default 0 check (delivery_fee >= 0),
+  ord_order_id bigint
 );
 
 create index if not exists shop_sales_created_at_idx on public.shop_sales (created_at);

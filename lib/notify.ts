@@ -1,4 +1,4 @@
-import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, type Fulfillment, type OrderType, type PaymentMethod } from "./labels";
+import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, type Delivery, type Fulfillment, type OrderType, type PaymentMethod } from "./labels";
 import { money, type summarize } from "./report";
 import { localTime, weekday } from "./time";
 
@@ -12,6 +12,8 @@ export type SaleMessage = {
   payment_method: PaymentMethod;
   customer_name?: string | null;
   notes?: string | null;
+  delivery?: Delivery | null;
+  delivery_fee?: number | string | null;
   created_at: string;
 };
 
@@ -25,6 +27,7 @@ export function formatSaleMessage(s: SaleMessage): string {
     `🚚 الاستلام / Pickup-Delivery: ${FULFILLMENT[s.fulfillment].ar} / ${FULFILLMENT[s.fulfillment].en}`,
   ];
   if (s.gift_name) lines.push(`🎀 هدية / Gift: ${s.gift_name} (${(s.gift_amount ?? 0).toFixed(2)} SAR)`);
+  if (s.delivery) lines.push(`📍 التوصيل / Delivery: ${s.delivery.area} (${Number(s.delivery_fee ?? 0).toFixed(2)} SAR) · ${s.delivery.date}`);
   if (s.customer_name) lines.push(`🙋 العميل / Customer: ${s.customer_name}`);
   if (s.notes) lines.push(`📝 ملاحظات / Notes: ${s.notes}`);
   lines.push(`🕒 ${localTime(s.created_at)}`);

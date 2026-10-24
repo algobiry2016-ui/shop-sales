@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, T, type Bilingual } from "@/lib/labels";
+import { FULFILLMENT, ORDER_TYPES, PAYMENT_METHODS, T, type Bilingual, SLOTS } from "@/lib/labels";
 import { money, type Sale, type Totals } from "@/lib/report";
 import { localTime, weekday } from "@/lib/time";
-import { DeleteSaleButton } from "./client";
+import { DeleteSaleButton, ResendDelivery } from "./client";
 import { Bi } from "./bi";
 
 export function TotalsRow({ totals }: { totals: Totals }) {
@@ -109,6 +109,23 @@ function Details({ s }: { s: Sale }) {
         </div>
       )}
       {extra && <div className="mt-1 max-w-64 whitespace-normal text-xs text-muted">{extra}</div>}
+      {/* A delivery: where, its fee, and whether it reached the supervisor. */}
+      {s.delivery && (
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+          <span>
+            🚚 {s.delivery.area} <span dir="ltr">({money(Number(s.delivery_fee))})</span> · <span dir="ltr">{s.delivery.date}</span>
+            {s.delivery.slot && ` · ${SLOTS[s.delivery.slot].ar}`}
+          </span>
+          {s.ord_order_id ? (
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-green-800">✓ {T.sentToRep.ar}</span>
+          ) : (
+            <>
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-red-700">{T.notSent.ar}</span>
+              <ResendDelivery id={s.id} />
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }
