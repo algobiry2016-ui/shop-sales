@@ -1,4 +1,12 @@
 {
-  "regions": ["sin1"],
-  "crons": [{ "path": "/api/cron/daily-summary", "schedule": "0 20 * * *" }]
+  "regions": [
+    "sin1"
+  ],
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"claude/sales-shop-system-lcs9jx\" ]",
+  "crons": [
+    {
+      "path": "/api/cron/daily-summary",
+      "schedule": "0 20 * * *"
+    }
+  ]
 }
