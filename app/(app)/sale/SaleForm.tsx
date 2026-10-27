@@ -41,10 +41,11 @@ function Choice<K extends string>({
 }
 
 /** `today` is the shop's date (Riyadh); managers may record a sale on an earlier date. */
-export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean; today: string }) {
+/** `deliveryOnly`: the supervisor and the website manager record shop deliveries, nothing else. */
+export function SaleForm({ canBackdate = false, deliveryOnly = false, today }: { canBackdate?: boolean; deliveryOnly?: boolean; today: string }) {
   const router = useRouter();
   const [orderType, setOrderType] = useState<OrderType | "">("");
-  const [fulfillment, setFulfillment] = useState<Fulfillment | "">("pickup");
+  const [fulfillment, setFulfillment] = useState<Fulfillment | "">(deliveryOnly ? "delivery" : "pickup");
   const [payment, setPayment] = useState<PaymentMethod | "">("");
   const [withGiftChoice, setWithGift] = useState<"yes" | "no">("no");
   const [amount, setAmount] = useState("");
@@ -105,7 +106,7 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
     formEl.reset();
     // Past sales keep "Not specified" so the next one on the same day needs only payment and amount.
     setOrderType(backdated ? "unknown" : "");
-    setFulfillment(backdated ? "unknown" : "pickup");
+    setFulfillment(backdated ? "unknown" : deliveryOnly ? "delivery" : "pickup");
     setPayment("");
     setWithGift("no");
     setAmount("");
@@ -149,7 +150,7 @@ export function SaleForm({ canBackdate = false, today }: { canBackdate?: boolean
         </label>
       )}
       <Choice name="order_type" title={T.orderType} options={without(ORDER_TYPES)} value={orderType} onChange={setOrderType} />
-      <Choice name="fulfillment" title={T.fulfillment} options={without(FULFILLMENT)} value={fulfillment} onChange={setFulfillment} />
+      {!deliveryOnly && <Choice name="fulfillment" title={T.fulfillment} options={without(FULFILLMENT)} value={fulfillment} onChange={setFulfillment} />}
       {delivering && (
         <fieldset className="space-y-3 rounded-md border-2 border-ink bg-paper p-3">
           <legend className="px-1 font-semibold">

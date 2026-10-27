@@ -66,7 +66,8 @@ export async function POST(request: Request) {
     // "Not specified" is only accepted for past sales.
     ((body.order_type === "unknown" || body.fulfillment === "unknown") && !backdated) ||
     (saleDate != null && !isDate(saleDate)) ||
-    (backdated && (profile.role !== "admin" || saleDate > localDate()))
+    (backdated && (profile.role !== "admin" || saleDate > localDate())) ||
+    (profile.deliveryOnly && !delivering)
   ) {
     return NextResponse.json({ error: "بيانات غير صحيحة / Invalid data" }, { status: 400 });
   }

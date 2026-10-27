@@ -19,7 +19,12 @@ export async function createClient() {
   });
 }
 
-export type Profile = { id: string; full_name: string; role: "employee" | "admin" };
+/**
+ * `deliveryOnly`: an employee who is also on the orders system's staff (the supervisor, the
+ * website manager). He records shop deliveries only, when Raouf isn't there; the rest of the
+ * shop's sales Raouf enters himself.
+ */
+export type Profile = { id: string; full_name: string; role: "employee" | "admin"; deliveryOnly: boolean };
 
 /**
  * The signed-in person's staff record, or null if they are not signed in or not on
@@ -31,7 +36,10 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   const userId = auth?.claims?.sub;
   if (!userId) return null;
   const { data } = await supabase.from("shop_staff").select("id, full_name, role").eq("id", userId).maybeSingle();
-  return data as Profile | null;
+  if (!data) return null;
+  // His own row there is readable to him (the orders system's rules).
+  const { data: ord } = data.role === "employee" ? await supabase.from("ord_staff").select("id").eq("id", userId).maybeSingle() : { data: null };
+  return { ...(data as Omit<Profile, "deliveryOnly">), deliveryOnly: !!ord };
 });
 
 export async function requireProfile(): Promise<Profile> {
