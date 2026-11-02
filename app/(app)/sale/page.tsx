@@ -25,7 +25,17 @@ export default async function SalePage() {
         <h1 className="mb-4 text-2xl font-semibold">
           <Bi l={T.newSale} display />
         </h1>
-        <SaleForm canBackdate={profile.role === "admin"} deliveryOnly={profile.deliveryOnly} today={localDate()} />
+        {profile.deliveryOnly ? (
+          // The supervisor and the website manager send shop deliveries from the orders system.
+          <p className="rounded-md border border-line bg-paper p-4">
+            توصيل المحل صار من برنامج الطلبات: زر <b>«➕ توصيل المحل»</b>.{" "}
+            <a href="https://website-orders-two.vercel.app/shop-delivery" className="underline">
+              افتحه
+            </a>
+          </p>
+        ) : (
+          <SaleForm canBackdate={profile.role === "admin"} today={localDate()} />
+        )}
       </Card>
       <Card>
         <h2 className="mb-3 text-lg font-semibold">
